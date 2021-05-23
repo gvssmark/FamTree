@@ -4,9 +4,8 @@ self.addEventListener('install', (e) => {
       '/',
        '/FamTree/index.html',
       '/FamTree/images/i192.png',
-   '/FamTree/images/i512.png',
-    
-       ])),
+   '/FamTree/images/i512.png'
+      ])),
   );
 });
 
