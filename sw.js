@@ -1,9 +1,9 @@
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open('fox-store').then((cache) => cache.addAll([
-      '/',
-       '/index.html',
-      'images/i192.png',
+      '/FamTree/',
+       '/FamTree//index.html',
+      '/FamTree/images/i192.png',
       ])),
   );
 });
