@@ -3,8 +3,7 @@ self.addEventListener('install', (e) => {
     caches.open('fox-store').then((cache) => cache.addAll([
       '/',
        '/index.html',
-      '/images/i192.png',
-   '/images/i512.png'
+      'images/i192.png',
       ])),
   );
 });
