@@ -5,6 +5,9 @@ self.addEventListener('install', (e) => {
       '/FamTree/index.js',
        '/FamTree//index.html',
       '/FamTree/images/i192.png',
+      '/FamTree/images/FT192.png',
+      '/FamTree/images/FT512.png',
+      
       ])),
   );
 });
