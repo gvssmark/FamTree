@@ -17,7 +17,8 @@
     "start_url": "/FamTree/index.html",
     "background_color": "#3367D6",
     "display": "fullscreen",
-    "description": "Family Tree."
+    "description": "Family Tree.",
+    "orientation" : "portrait"
       
     }
 
