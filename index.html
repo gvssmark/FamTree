@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html>
     
@@ -56,6 +57,8 @@ document.getElementById("getnames").innerHTML=tablebody
 <body style="font-size:small; background-color:powderblue; " >
 
 <style>
+
+img{border-radius:50px;}
 p.ances{
 border-radius:10px;
 }
@@ -90,7 +93,8 @@ p{width:350px; margin-left:5px;}
 </div>
 
 <div  id='todisplay' style="display:none; " >
-<div id='photo' style="position: fixed;  width:100px; height:100px; margin-top:120px; margin-left:250px; "><img src='https://github.com/gvssmark/FamTree/blob/main/photos/DSC0189.jpg?raw=true' width=100 height=100 style='border-radius:50px; '></div>
+<div id='photo' style="position: fixed;  width:100px; height:100px; margin-top:0px; margin-left:250px; ">
+</div>
 <div style="position:fixed; top:0px; background-color:cyan; width:100%;"  >
 <p class="fixed" style="width:350px;"id = "personaldetails" ></p>
 </div>
@@ -217,6 +221,11 @@ return [tslno-1, grandchildren]
 
 
 function display(){
+//i//mageLocation="<img src='https://github.com/gvssmark/FamTree/blob/main/photos/ "
+photovalue ="<img src='https://github.com/gvssmark/FamTree/blob/main/photos/"+myid+".PNG?raw=true' width=100 height=100 onerror=this.src='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.png?raw=true' width=100 height=100>"
+
+document.getElementById("photo").innerHTML=photovalue
+
 
 var spouseid = parseInt(famdata[myid][5])||0;
 var secondspouse="";
