@@ -87,8 +87,8 @@ p{width:350px; margin-left:5px;}
 </style>
 
 <div id='div1' style="display:block">
-<Br><h4 align=center >Family Tree</h4>
-<input type=text  style=" width: 80%; margin-left:10%; text-color:red; background-color: cyan; border: 1px solid cyan;  border-radius:15px;  height:35px; outline:none; " id='myInput' onkeyup="dispdata()" placeholder="Search here... Minimum 4 Characters"><br>
+<Br><h4 align=center >వంశవృక్షము</h4>
+<input type=text  style=" width: 80%; margin-left:10%; text-color:red; background-color: cyan; border: 1px solid cyan;  border-radius:15px;  height:35px; outline:none; " id='myInput' onkeyup="dispdata()" placeholder="వెదకండి "><br>
 <p id='getnames'  style="margin-left:10px; " ></p>
 
 <table  id="table" style="border-collapse:collapse;  "> </table>
@@ -113,11 +113,11 @@ p{width:350px; margin-left:5px;}
 <p id="MaternalAncestors"></p>
 <p id="SpousePaternalAncestors"></p>
 <p id="SpouseMaternalAncestors"></p>
-<p class="ances"  style="background-color: rgba(245, 138, 241, 0.5);" id = "sibs">Siblings</p>
+<p class="ances"  style="background-color: rgba(245, 138, 241, 0.5);" id = "sibs">తోబుట్టువులు </p>
 <p id="siblings" style=" padding-left:10px; "></p>
-<p class="ances"  style="background-color: rgba(245, 138, 241, 0.5);" id = "childs">Children</p>
+<p class="ances"  style="background-color: rgba(245, 138, 241, 0.5);" id = "childs">సంతానము </p>
 <p id="children1" style=" padding-left:10px; "></p>
-<p class="ances"  style="background-color: rgba(245, 138, 241, 0.5);" id = "grandchids">Grand Children</p>
+<p class="ances"  style="background-color: rgba(245, 138, 241, 0.5);" id = "grandchids">మనుమలు</p>
 <p id="grandchildren1" style=" padding-left:10px; "></p>
 <p id="gr1grandchildren1" style=" padding-left:10px; "></p>
 <p id="gr2grandchildren1" style=" padding-left:10px; "></p>
@@ -127,7 +127,7 @@ p{width:350px; margin-left:5px;}
 <p id="gr6grandchildren1" style=" padding-left:10px; "></p>
 <p id="ances"></p>
 <div align=center style="position:fixed; bottom:0px; background-color:1cyan; width:350px; height:30px; ">
-<input  style="width: 50%; height:100%; border-radius:15px; background-color:yellow;   " type="button" value= "Close" id="btn" onclick="showhide()">
+<input  style="width: 50%; height:100%; border-radius:15px; background-color:yellow;   " type="button" value= "మూసివేయు " id="btn" onclick="showhide()">
 </div>
 <p id="end"></p>
 
@@ -204,7 +204,7 @@ tslno=1;
 for (i=0; i<inputArray.length; i++){
 var searchv = 3;
 if (famdata[inputArray[i]] [2] ===  "F") { searchv=4};
-if (famdata.filter(a=>a[searchv]===inputArray[i]).length>0){grandchildren+= "<span style='color:red; font-size:small;'> Children of : " + famdata[inputArray[i]] [1] +"</span><br>" }
+if (famdata.filter(a=>a[searchv]===inputArray[i]).length>0){grandchildren+= "<span style='color:red; font-size:small;'>  " + famdata[inputArray[i]] [1] +" యొక్క సంతానము</span><br>" }
 //grandchildren += 'Children of ' +  famdata[inputArray[i]] [1]+'<br>'
 slno=1;
 for (j=0; j<famdata.length; j++){
@@ -232,16 +232,16 @@ document.getElementById("photo").innerHTML=photovalue
 var spouseid = parseInt(famdata[myid][5])||0;
 var secondspouse="";
 
-var gender = "Wife";
-if (famdata[myid][2]==="F") {gender="Husband"}
+var gender = "భార్య";
+if (famdata[myid][2]==="F") {gender="భర్త"}
 
 if (myid*1 ===61) {secondspouse = " and   <i> <span id='383'  onClick='reply_click(this.id)'>Tatiraju Prabhavathi </span>"}
 
 
 if(spouseid>0){
-document.getElementById("personaldetails").innerHTML ="<b><u>Personal Details</u></b><br> <span id='" + myid +"'  onClick='reply_click(this.id)'><b>" +famdata[myid][1]+"</b></span><br><i> <span id='"+spouseid+"'  onClick='reply_click(this.id)'>"+ gender+" "+famdata[spouseid][1]+"</span></i></b>" +secondspouse ;}
+document.getElementById("personaldetails").innerHTML ="<b><u>వ్యక్తి వివరాలు </u></b><br> <span id='" + myid +"'  onClick='reply_click(this.id)'><b>" +famdata[myid][1]+"</b></span><br><i> <span id='"+spouseid+"'  onClick='reply_click(this.id)'>"+ gender+" "+famdata[spouseid][1]+"</span></i></b>" +secondspouse ;}
 
-else{document.getElementById("personaldetails").innerHTML ="<b><u>Personal Details</u></b><br> <span id='" + myid +"'  onClick='reply_click(this.id)'>" +famdata[myid][1]+"</span> "; }
+else{document.getElementById("personaldetails").innerHTML ="<b><u>వ్యక్తి వివరాలు </u></b><br> <span id='" + myid +"'  onClick='reply_click(this.id)'>" +famdata[myid][1]+"</span> "; }
 
 
 
@@ -254,29 +254,29 @@ var motherid = parseInt(famdata[myid][4])||0
 //============================
 
 if (famdata[fatherid][3] >0){
-document.getElementById("ancestors").innerHTML ="<h4 align=center>Ancestors</h4>"}
+document.getElementById("ancestors").innerHTML ="<h4 align=center>పూర్వీకులు</h4>"}
 else{document.getElementById("ancestors").innerHTML =""}
 
 if (famdata[fatherid][3] >0){
-document.getElementById("fathersfather").innerHTML = "<b><u>Father's Father</b><span style='color:red; font-size:small;'>  </u></span ><br>"+ ancestors(fatherid,3);       }
+document.getElementById("fathersfather").innerHTML = "<b><u>తండ్రి యొక్క తండ్రి తరం</b><span style='color:red; font-size:small;'>  </u></span ><br>"+ ancestors(fatherid,3);       }
 else{document.getElementById("fathersfather").innerHTML =""}
 
 if (famdata[fatherid][4] >0){
-document.getElementById("fathersmother").innerHTML = "<b><u>Father's Mother</b><span style='color:red; font-size:small;'> </u></span ><br>"+ ancestors(fatherid,4);       }
+document.getElementById("fathersmother").innerHTML = "<b><u>తండ్రి యొక్క తల్లి తరం</b><span style='color:red; font-size:small;'> </u></span ><br>"+ ancestors(fatherid,4);       }
 else{document.getElementById("fathersmother").innerHTML =""}
 
 if (famdata[motherid][3] >0){
-document.getElementById("mothersfather").innerHTML = "<b><u>Mother's Father</b><span style='color:red; font-size:small;'> </u></span ><br>"+ ancestors(motherid,3);       }
+document.getElementById("mothersfather").innerHTML = "<b><u>తల్లి యొక్క  తండ్రి తరం</b><span style='color:red; font-size:small;'> </u></span ><br>"+ ancestors(motherid,3);       }
 else{document.getElementById("mothersfather").innerHTML =""}
 
 if (famdata[motherid][4] >0){
-document.getElementById("mothersmother").innerHTML = "<b><u>Mother's Mother</b><span style='color:red; font-size:small;'> </u></span ><br>"+ ancestors(motherid,4);       }
+document.getElementById("mothersmother").innerHTML = "<b><u>తల్లి యొక్క  తల్లి తరం</b><span style='color:red; font-size:small;'> </u></span ><br>"+ ancestors(motherid,4);       }
 else{document.getElementById("mothersmother").innerHTML =""}
 
 //==========================
 
 if(fatherid>0){
-document.getElementById("parents").innerHTML = "<b><u>Parents</u></b><br><span id='" + fatherid + "' onClick='reply_click(this.id)'>"+ famdata[fatherid][1]+"</span><br> &nbsp; &nbsp; &nbsp;<i> <span id='"+motherid+"' onClick='reply_click(this.id)'>"+  famdata[motherid][1]+"</i>" ;}
+document.getElementById("parents").innerHTML = "<b><u>తల్లితండ్రులు </u></b><br><span id='" + fatherid + "' onClick='reply_click(this.id)'>"+ famdata[fatherid][1]+"</span><br> &nbsp; &nbsp; &nbsp;<i> <span id='"+motherid+"' onClick='reply_click(this.id)'>"+  famdata[motherid][1]+"</i>" ;}
 else{document.getElementById("parents").innerHTML = ""}
 /*
 if (famdata[fatherid][3] >0){
@@ -297,16 +297,16 @@ else{document.getElementById("SpouseMaternalAncestors").innerHTML =""}
 */
 s1=siblings()
 if(s1[0]>0){
-document.getElementById("sibs").innerHTML ="<h4 align=center>Siblings</h4>"
-document.getElementById("siblings").innerHTML = "<b><u>Siblings</u><span class='w3-badge w3-red'>"+ s1[0]+"</span></b><br>"+ s1[1] ;}
+document.getElementById("sibs").innerHTML ="<h4 align=center>తోబుట్టువులు </h4>"
+document.getElementById("siblings").innerHTML = "<b><u>తోబుట్టువులు </u><span class='w3-badge w3-red'>"+ s1[0]+"</span></b><br>"+ s1[1] ;}
 else{document.getElementById("siblings").innerHTML =""
 document.getElementById("sibs").innerHTML =""
 }
 
 c1 = children(); 
 if(gen1.length>0){
-document.getElementById("childs").innerHTML ="<h4 align=center>Children</h4>"
-document.getElementById("children1").innerHTML = "<b><u>Children </u><span class='w3-badge w3-red'>"+ c1[0]+"</span></b><br>" +c1[1]; }
+document.getElementById("childs").innerHTML ="<h4 align=center>సంతానము </h4>"
+document.getElementById("children1").innerHTML = "<b><u>సంతానము  </u><span class='w3-badge w3-red'>"+ c1[0]+"</span></b><br>" +c1[1]; }
 else{document.getElementById("children1").innerHTML ="" 
 document.getElementById("childs").innerHTML =""}
 
@@ -322,31 +322,31 @@ g7 = generationGeneric(gen7,gen8) ;
 //alert(gen1.length)
 
 if(gen2.length>0){
-document.getElementById("grandchildren1").innerHTML      = "<b><u>1. Grand Children </u><span class='w3-badge w3-red'>"+g1[0]+"</span></b><br>" + g1[1]
-document.getElementById("grandchids").innerHTML ="<h4 align=center>Grand Children</h4>"}
+document.getElementById("grandchildren1").innerHTML      = "<b><u>1. మనుమలు  </u><span class='w3-badge w3-red'>"+g1[0]+"</span></b><br>" + g1[1]
+document.getElementById("grandchids").innerHTML ="<h4 align=center>మనుమలు </h4>"}
 else{document.getElementById("grandchildren1").innerHTML      = ""
 document.getElementById("grandchids").innerHTML =""}
 
 if(gen3.length>0){
-document.getElementById("gr1grandchildren1").innerHTML = "<b><u>2. Great Grand Children </u><span class='w3-badge w3-red'>"+g2[0]+"</span></b><br>" +g2[1]}
+document.getElementById("gr1grandchildren1").innerHTML = "<b><u>2. మునిమనుమలు  </u><span class='w3-badge w3-red'>"+g2[0]+"</span></b><br>" +g2[1]}
 else{document.getElementById("gr1grandchildren1").innerHTML =""}
 
 if(gen4.length>0){
-document.getElementById("gr2grandchildren1").innerHTML = "<b><u>3. Great Grand Children  </u><span class='w3-badge w3-red'>"+g3[0]+"</span></b><br>" +g3[1]}
+document.getElementById("gr2grandchildren1").innerHTML = "<b><u>3. మునిమనుమలు   </u><span class='w3-badge w3-red'>"+g3[0]+"</span></b><br>" +g3[1]}
 else{document.getElementById("gr2grandchildren1").innerHTML =""}
 if(gen5.length>0){
-document.getElementById("gr3grandchildren1").innerHTML = "<b><u>4. Great Grand Children  </u><span class='w3-badge w3-red'>"+g4[0]+"</span></b><br>" +g4[1]}
+document.getElementById("gr3grandchildren1").innerHTML = "<b><u>4. మునిమనుమలు   </u><span class='w3-badge w3-red'>"+g4[0]+"</span></b><br>" +g4[1]}
 else{document.getElementById("gr3grandchildren1").innerHTML =""}
 
 if(gen6.length>0){
-document.getElementById("gr4grandchildren1").innerHTML = "<b><u>5. Great Grand Children  </u><span class='w3-badge w3-red'>"+g5[0]+"</span></b><br>" +g5[1]}
+document.getElementById("gr4grandchildren1").innerHTML = "<b><u>5. మునిమనుమలు   </u><span class='w3-badge w3-red'>"+g5[0]+"</span></b><br>" +g5[1]}
 else{document.getElementById("gr4grandchildren1").innerHTML =""}
 
 if(gen7.length>0){
-document.getElementById("gr5grandchildren1").innerHTML = "<b><u>6. Great Grand Children  </u><span class='w3-badge w3-red'>"+g6[0]+"</span></b><br>" +g6[1]; }
+document.getElementById("gr5grandchildren1").innerHTML = "<b><u>6. మునిమనుమలు   </u><span class='w3-badge w3-red'>"+g6[0]+"</span></b><br>" +g6[1]; }
 else{document.getElementById("gr5grandchildren1").innerHTML =""}
 if(gen8.length>0){
-document.getElementById("gr6grandchildren1").innerHTML = "<b><u>7. Great Grand Children  </u><span class='w3-badge w3-red'>"+g7[0]+"</span></b><br>" +g7[1]}
+document.getElementById("gr6grandchildren1").innerHTML = "<b><u>7. మునిమనుమలు   </u><span class='w3-badge w3-red'>"+g7[0]+"</span></b><br>" +g7[1]}
 else{document.getElementById("gr6grandchildren1").innerHTML =""}
 
 
