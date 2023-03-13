@@ -1,6 +1,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html>
     
@@ -15,13 +16,13 @@
 
 
 
-url="https://script.google.com/macros/s/AKfycbyZaGAxHmoD9B1eVRyV5VKxZbmUOqY3Iuk9bm93_4spyQk82Ps/exec"
+url="https://script.google.com/macros/s/AKfycbycChH5D78kNO3bJYy1rvVZ0tvQWsXgloD19lYYZ3-5m6Q37szyPNqAIZRNCA2ZG1An/exec"
 async function getMyData (){
 response= await fetch(url)
 data= await response.json()
 tempData=data["user"]
-famdata = tempData.map (a => [a.id, a.name, a.gender, a.fid, a.mid, a.sid])
-famdata.unshift(["Person ID", " ", "Gender", "Father ID", "Mother ID", "Spouse ID"])
+famdata = tempData.map (a => [a.id, a.name, a.gender, a.fid, a.mid, a.sid, a.photo])
+famdata.unshift(["Person ID", "Name", "Gender", "Father ID", "Mother ID", "Spouse ID", "Photo"])
 dispdata()
 }
 
@@ -223,9 +224,9 @@ return [tslno-1, grandchildren]
 
 function display(){
 
-photovalue ="<img src='https://github.com/gvssmark/FamTree/blob/main/photos/"+myid+".JPG?raw=true' width=100 height=140 onerror=this.src='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.png?raw=true' width=100 height=100>"
+//photovalue ="<img src='https://github.com/gvssmark/FamTree/blob/main/photos/"+myid+".JPG?raw=true' width=100 height=140 onerror=this.src='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.png?raw=true' width=100 height=100>"
 
-document.getElementById("photo").innerHTML=photovalue
+//document.getElementById("photo").innerHTML=photovalue
 
 
 var spouseid = parseInt(famdata[myid][5])||0;
