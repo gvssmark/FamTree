@@ -1,0 +1,162 @@
+<html>
+<head>
+   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+* {box-sizing: border-box;}
+body{font-size:small; background:powderblue; margin:auto; align-items: center; }
+h1 {color:green;}
+h2, h1 {text-align:center}
+.ances {background:yellow}
+.mances {background:cyan}
+.desc {background:pink}
+@media only screen and (min-width: 800px) { body {width:50%; }}
+div {width:98%; margin:auto; box-shadow: 0 0 5px rgba(0, 0, 10, 1.15);  border-radius:25px  0px }
+#ftree {border-radius:0;  }
+</style>
+</head>
+<h1>Family Tree</h1>
+<div id='ftree'>
+
+<div class='ances'>
+<h2>Paternal Ancestors</h2>
+<p id='ances'></p>
+</div>
+
+<div class='mances'>
+<h2>Maternal Ancestors</h2>
+<p id='mances'></p>
+</div>
+
+<div class='desc'>
+<h2>Descendants </h2>
+<p id='desc'></p>
+
+</div>
+
+</div>
+
+
+<script>
+url="https://script.google.com/macros/s/AKfycbycChH5D78kNO3bJYy1rvVZ0tvQWsXgloD19lYYZ3-5m6Q37szyPNqAIZRNCA2ZG1An/exec"
+async function getMyData (){
+response= await fetch(url)
+data= await response.json()
+tempData=data["user"]
+familyData = tempData.map (a => [a.id, a.name, a.gender, a.fid, a.mid, a.sid, a.photo])
+
+class Person {
+  constructor(id, name, gender) {
+    this.id = id;
+    this.name = name;
+    this.gender = gender;
+    this.children = [];
+    this.spouseId = null; // Store spouse ID separately
+    this.serialNumber = null; // Serial number for siblings
+  }
+}
+personMap = new Map();
+for (const [id, name, gender, fatherId, motherId, spouseId, serialNumber] of familyData) {
+  const person = new Person(id, name, gender);
+  personMap.set(id, person);
+  person.spouseId = spouseId;
+  person.serialNumber = serialNumber;
+}
+
+for (const person of personMap.values()) {
+  const spouseId = person.spouseId;
+  if (spouseId !== null) {
+    const spouse = personMap.get(spouseId);
+    if (spouse) {
+      person.spouse = spouse;
+      spouse.spouse = person;
+    } else {
+      console.error(`Error: Person with ID ${spouseId} not found for spouse link.`);
+    }
+  }
+}
+
+for (const person of personMap.values()) {
+  const fatherId = familyData.find(entry => entry[0] === person.id)[3];
+  const motherId = familyData.find(entry => entry[0] === person.id)[4];
+  const father = personMap.get(fatherId);
+  const mother = personMap.get(motherId);
+  if (father) {
+    father.children.push(person);
+  }
+  if (mother) {
+    mother.children.push(person);
+  }
+}
+
+for (const parent of personMap.values()) {
+  parent.children.sort((a, b) => a.serialNumber - b.serialNumber);
+}
+alltree(1)
+}
+
+getMyData()
+
+function displayFamilyTree(person, depth = 0) {
+  const spaces = "-".repeat(depth * 4);
+des +=`${spaces}<span  class='dances' id='${person.id}'>${person.name}</span> (${person.gender}) <br>`
+  for (const child of person.children) {
+    displayFamilyTree(child, depth + 1);
+  }
+}
+
+function displayAncestors(personId, depth = 0) {
+  const person = personMap.get(personId);
+  if (!person) {
+    console.error(`Error: Person with ID ${personId} not found.`);
+    return;
+  }
+  const spaces = "-".repeat(depth * 4);
+anc +=  `${spaces}<span  class='dances' id='${person.id}'>${person.name}</span> (${person.gender})<br>`
+  const fatherId = familyData.find(entry => entry[0] === person.id)[3];
+  if (fatherId !== null) {
+    displayAncestors(fatherId, depth + 1);
+  }
+}
+
+function displayMaternalAncestors(personId, depth = 0) {
+  const person = personMap.get(personId);
+  if (!person) {
+    console.error(`Error: Person with ID ${personId} not found.`);
+    return;
+  }
+  const spaces = "-".repeat(depth * 4);
+  manc +=`${spaces}<span  class='dances' id='${person.id}'> ${person.name} </span> (${person.gender})<br>`
+  const motherId = familyData.find(entry => entry[0] === person.id)[4];
+  if (motherId !== null) {
+    const mother = personMap.get(motherId);
+    if (mother) {
+      displayMaternalAncestors(motherId, depth + 1);
+    }
+  }
+}
+
+function alltree(a){
+anc=''
+des=''
+manc=''
+desc   = personMap.get(a);
+displayAncestors(a);
+displayFamilyTree(desc);
+displayMaternalAncestors(a)
+document.getElementById('ances').innerHTML = anc+"<br>"
+document.getElementById('mances').innerHTML = manc+"<br>"
+document.getElementById('desc').innerHTML = des +"<br>"
+}
+
+document.getElementById('ftree').addEventListener('click', function (event) {
+  const clickedElement = event.target;
+  if (clickedElement.classList.contains('dances')) {
+    const personId = parseInt(clickedElement.id);
+    alltree(personId);
+  } 
+});
+
+</script>
+
+</body>
+</html>
