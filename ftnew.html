@@ -1,3 +1,4 @@
+
 <html>
 <head>
    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -6,17 +7,26 @@
 body{font-size:small; background:powderblue; margin:auto; align-items: center; }
 h1 {color:green;}
 h2, h1 {text-align:center}
-.ances {background:yellow}
-.mances {background:cyan}
-.desc {background:pink}
+.ances {background:; box-shadow: 0 0 5px rgba(0, 0, 10, 1.15)}
+.mances {background:; box-shadow: 0 0 5px rgba(0, 0, 10, 1.15)}
+.desc {background:; box-shadow: 0 0 5px rgba(0, 0, 10, 1.15)}
 @media only screen and (min-width: 800px) { body {width:50%; }}
-div {width:98%; margin:auto; box-shadow: 0 0 5px rgba(0, 0, 10, 1.15);  border-radius:25px  0px }
-#ftree {border-radius:0;  }
+div {width:98%; margin:auto; ;  }
+#ftree {border-radius:0;  display:none}
+#ftreeHome {width:20px; height:20px; background:red; float:right; right:20px; top:50px; border-radius:50px;  color:white;  position:absolute;}
+td {border:0px solid black; height:20px;}
+table {width:100%}
+
 </style>
 </head>
 <h1>Family Tree</h1>
-<div id='ftree'>
 
+<div id='alldata'>
+<p id='alldataP'></p>
+</div>
+
+<div id='ftree'>
+<div id='ftreeHome' onclick='hide()'></div>
 <div class='ances'>
 <h2>Paternal Ancestors</h2>
 <p id='ances'></p>
@@ -91,14 +101,23 @@ for (const person of personMap.values()) {
 for (const parent of personMap.values()) {
   parent.children.sort((a, b) => a.serialNumber - b.serialNumber);
 }
-alltree(1)
+//alltree(1)
+alldataPfunc()
 }
 
 getMyData()
 
+function alldataPfunc(){
+familyDataTable='<table>'
+tempdata = tempData.sort(function (a, b) { return a.name.localeCompare(b.name) })
+
+tempdata.forEach (a=>  familyDataTable+= `<tr class='dances' onclick='alltree(${a.id})'><td>${a.name}`)
+document.getElementById('alldataP').innerHTML = familyDataTable +"</table>"
+}
+
 function displayFamilyTree(person, depth = 0) {
   const spaces = "-".repeat(depth * 4);
-des +=`${spaces}<span  class='dances' id='${person.id}'>${person.name}</span> (${person.gender}) <br>`
+des +=`<tr><td>${spaces}<span  class='dances' id='${person.id}'>${person.name}</span> (${person.gender}) `
   for (const child of person.children) {
     displayFamilyTree(child, depth + 1);
   }
@@ -111,7 +130,7 @@ function displayAncestors(personId, depth = 0) {
     return;
   }
   const spaces = "-".repeat(depth * 4);
-anc +=  `${spaces}<span  class='dances' id='${person.id}'>${person.name}</span> (${person.gender})<br>`
+anc +=  `<tr><td>${spaces}<span  class='dances' id='${person.id}'>${person.name}</span> (${person.gender})`
   const fatherId = familyData.find(entry => entry[0] === person.id)[3];
   if (fatherId !== null) {
     displayAncestors(fatherId, depth + 1);
@@ -125,7 +144,7 @@ function displayMaternalAncestors(personId, depth = 0) {
     return;
   }
   const spaces = "-".repeat(depth * 4);
-  manc +=`${spaces}<span  class='dances' id='${person.id}'> ${person.name} </span> (${person.gender})<br>`
+  manc +=`<tr><td>${spaces}<span  class='dances' id='${person.id}'> ${person.name} </span> (${person.gender})`
   const motherId = familyData.find(entry => entry[0] === person.id)[4];
   if (motherId !== null) {
     const mother = personMap.get(motherId);
@@ -136,25 +155,44 @@ function displayMaternalAncestors(personId, depth = 0) {
 }
 
 function alltree(a){
-anc=''
-des=''
-manc=''
+anc='<table>'
+des='<table>'
+manc='<table>'
 desc   = personMap.get(a);
 displayAncestors(a);
 displayFamilyTree(desc);
 displayMaternalAncestors(a)
-document.getElementById('ances').innerHTML = anc+"<br>"
-document.getElementById('mances').innerHTML = manc+"<br>"
-document.getElementById('desc').innerHTML = des +"<br>"
+document.getElementById('ances').innerHTML = anc+"</table>"
+document.getElementById('mances').innerHTML = manc+"</table>"
+document.getElementById('desc').innerHTML = des +"</table>"
+document.getElementById('ftree').style.display='block'
+document.getElementById('alldata').style.display='none'
+window.scrollTo(0, 0);
+}
+
+function hide(){document.getElementById('ftree').style.display='none'
+document.getElementById('alldata').style.display='block'
+                window.scrollTo(0, 0);
+
 }
 
 document.getElementById('ftree').addEventListener('click', function (event) {
-  const clickedElement = event.target;
+   clickedElement = event.target;
   if (clickedElement.classList.contains('dances')) {
     const personId = parseInt(clickedElement.id);
     alltree(personId);
   } 
 });
+
+document.getElementById('alldata').addEventListener('click', function (event) {
+   clickedElement = event.target;
+  if (clickedElement.classList.contains('dances')) {
+    const personId = parseInt(clickedElement.id);
+    alert(personId);
+  } 
+})
+
+
 
 </script>
 
