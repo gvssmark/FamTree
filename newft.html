@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -175,7 +176,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (isLandscape) {
       document.getElementById('backButton').style.display = 'block';
     } else {
-      document.getElementById('backButton').style.display = 'none';
+      document.getElementById('backButton').style.display = 'block';
     }
   }
 
@@ -306,6 +307,7 @@ p {
 
 <div id="familyTreeDiv">
   <div id="stickyHeader">
+  <button id="backButton">←</button>
     <h3 id="selectedPerson"></h3>
     <div id="ancestors"></div>
   </div>
@@ -314,7 +316,7 @@ p {
   </div>
 </div>
 
-<button id="backButton">←</button>
+
 <button id="backToTopButton">↑</button>
 
 </body>
