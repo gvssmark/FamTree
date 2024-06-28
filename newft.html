@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+async function getMyData() {
+  const url = "https://script.google.com/macros/s/AKfycbycChH5D78kNO3bJYy1rvVZ0tvQWsXgloD19lYYZ3-5m6Q37szyPNqAIZRNCA2ZG1An/exec";
+  const response = await fetch(url);
+  const data = await response.json();
+  const tempData = data["user"];
+  return tempData.map(a => [a.id, a.name, a.gender, a.fid, a.mid, a.sid, a.photo]);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const familyData = await getMyData();
+
+  class Person {
+    constructor(id, name, gender) {
+      this.id = id;
+      this.name = name;
+      this.gender = gender;
+      this.children = [];
+      this.spouseId = null; // Store spouse ID separately
+    }
+  }
+
+  // Create a map to store Person objects by their ID
+  const personMap = new Map();
+
+  // Create Person objects and add them to the map
+  for (const [id, name, gender, fatherId, motherId, spouseId] of familyData) {
+    const person = new Person(id, name, gender);
+    personMap.set(id, person);
+
+    // Store spouse ID separately
+    person.spouseId = spouseId;
+  }
+
+  // Establish spouse relationships
+  for (const person of personMap.values()) {
+    const spouseId = person.spouseId;
+
+    if (spouseId !== null) {
+      const spouse = personMap.get(spouseId);
+
+      if (spouse) {
+        person.spouse = spouse;
+        spouse.spouse = person;
+      } else {
+        console.error(`Error: Person with ID ${spouseId} not found for spouse link.`);
+      }
+    }
+  }
+
+  // Link parents and children
+  for (const person of personMap.values()) {
+    const fatherId = familyData.find(entry => entry[0] === person.id)[3];
+    const motherId = familyData.find(entry => entry[0] === person.id)[4];
+
+    const father = personMap.get(fatherId);
+    const mother = personMap.get(motherId);
+
+    if (father) {
+      father.children.push(person);
+    }
+
+    if (mother) {
+      mother.children.push(person);
+    }
+  }
+
+  let ftree = '';
+  // Function to display family tree starting from a person
+  function displayFamilyTree(person, depth = 0) {
+    const spaces = "&nbsp ".repeat(depth * 1.5);
+    ftree += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
+    for (const child of person.children) {
+      displayFamilyTree(child, depth + 1);
+    }
+  }
+
+  // Function to display parent details
+  function displayParentDetails(person) {
+    const fatherId = familyData.find(entry => entry[0] === person.id)[3];
+    const motherId = familyData.find(entry => entry[0] === person.id)[4];
+
+    const father = personMap.get(fatherId);
+    const mother = personMap.get(motherId);
+
+    let parentDetails = '<h2>Ancestors</h2>';
+    if (father) {
+      parentDetails += `<div><strong>Father:</strong> <span class='person' data-id='${father.id}'>${father.name}</span> (${father.gender})</div>`;
+    }
+    if (mother) {
+      parentDetails += `<div><strong>Mother:</strong> <span class='person' data-id='${mother.id}'>${mother.name}</span> (${mother.gender})</div>`;
+    }
+
+    return parentDetails;
+  }
+
+  // Function to handle click event on a person
+  function onPersonClick(event) {
+    const personId = parseInt(event.target.getAttribute('data-id'));
+    const person = personMap.get(personId);
+    if (person) {
+      document.getElementById('selectedPerson').textContent = `${person.name}`;
+      ftree = '';
+      const parentDetails = displayParentDetails(person);
+      displayFamilyTree(person);
+      document.getElementById('famtree').innerHTML = parentDetails + '<br><h2>Descendants</h2>' + ftree;
+      attachEventListeners();
+    } else {
+      console.error(`Error: Person with ID ${personId} not found.`);
+    }
+  }
+
+  // Function to attach event listeners to person elements
+  function attachEventListeners() {
+    const personElements = document.querySelectorAll('.person');
+    personElements.forEach(personElement => {
+      personElement.addEventListener('click', onPersonClick);
+    });
+  }
+
+  // Example: Display family tree starting from a specific person (e.g., person with ID 6)
+  const rootPersonId = 401; // Change this to the actual root person ID
+  const rootPerson = personMap.get(rootPersonId);
+
+  if (rootPerson) {
+    document.getElementById('selectedPerson').textContent = ` ${rootPerson.name}`;
+    const parentDetails = displayParentDetails(rootPerson);
+    displayFamilyTree(rootPerson);
+    document.getElementById('famtree').innerHTML = parentDetails + '<br><h2>Descendants</h2>' + ftree;
+    attachEventListeners();
+  } else {
+    console.error(`Error: Root person with ID ${rootPersonId} not found.`);
+  }
+});
+</script>
+<style>
+body {background:black; color:white; font-size:small}
+.depth0 {color: yellow;} /* Blue */
+.depth1 {color: #FF0000;} /* Red */
+.depth2 {color: #00FF00;} /* Green */
+.depth3 {color: pink;} /* Dark Blue */
+.depth4 {color: white;} /* Indigo */
+.depth5 {color: #00CED1;} /* Dark Turquoise */
+.depth6 {color: #008000;} /* Green */
+.depth7 {color: #FF4500;} /* Orange Red */
+.person { cursor: pointer; }
+</style>
+</head>
+<body>
+
+<h2 id="selectedPerson">Family Tree</h1>
+<p id='famtree'>My first paragraph.</p>
+
+</body>
+</html>
