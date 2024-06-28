@@ -106,18 +106,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       let spouseDetails = '';
       if (person.spouse) {
         const spouseTitle = person.gender === 'M' ? 'Wife' : 'Husband';
-        spouseDetails = `<small>${spouseTitle}: ${person.spouse.name}</small>`;
+        spouseDetails = `<small class="spouse-name" data-id='${person.spouse.id}'>${spouseTitle}: ${person.spouse.name}</small>`;
       }
       document.getElementById('selectedPerson').innerHTML = `${person.name}<br>${spouseDetails}`;
       ftree = '';
       const parentDetails = displayParentDetails(person);
       document.getElementById('ancestors').innerHTML = parentDetails ? '<h2>Ancestors</h2>' + parentDetails : '';
       displayFamilyTree(person);
-      document.getElementById('descendants').innerHTML = '<h2>Descendants</h2>' + ftree;
+      document.getElementById('descendants').innerHTML = '<h3>Descendants</h3>' + ftree;
       attachEventListeners();
       document.getElementById('personListDiv').style.display = 'none';
       document.getElementById('familyTreeDiv').style.display = 'block';
-      document.getElementById('backButton').style.display = 'block';
+      checkOrientation(); // Check orientation to show/hide back button
     } else {
       console.error(`Error: Person with ID ${personId} not found.`);
     }
@@ -125,7 +125,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Function to attach event listeners to person elements
   function attachEventListeners() {
-    const personElements = document.querySelectorAll('.person');
+    const personElements = document.querySelectorAll('.person, .spouse-name');
     personElements.forEach(personElement => {
       personElement.addEventListener('click', onPersonClick);
     });
@@ -169,6 +169,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // Function to check screen orientation and show/hide back button
+  function checkOrientation() {
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    if (isLandscape) {
+      document.getElementById('backButton').style.display = 'block';
+    } else {
+      document.getElementById('backButton').style.display = 'none';
+    }
+  }
+
+  // Listen for orientation changes
+  window.addEventListener("orientationchange", checkOrientation);
+
+  // Initial check for orientation
+  checkOrientation();
+
   // Example: Display family tree starting from a specific person (e.g., person with ID 401)
   const rootPersonId = 401; // Change this to the actual root person ID
   const rootPerson = personMap.get(rootPersonId);
@@ -177,7 +193,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let spouseDetails = '';
     if (rootPerson.spouse) {
       const spouseTitle = rootPerson.gender === 'male' ? 'Wife' : 'Husband';
-      spouseDetails = `<small>${spouseTitle}: ${rootPerson.spouse.name}</small>`;
+      spouseDetails = `<small class="spouse-name" data-id='${rootPerson.spouse.id}'>${spouseTitle}: ${rootPerson.spouse.name}</small>`;
     }
     document.getElementById('selectedPerson').innerHTML = `${rootPerson.name}<br>${spouseDetails}`;
     const parentDetails = displayParentDetails(rootPerson);
@@ -194,23 +210,44 @@ document.addEventListener("DOMContentLoaded", async () => {
 body {
   background: black;
   color: white;
-  width: 400px;
+  width: 360px;
+  
 }
-.depth0 {color: yellow;} /* Blue */
-.depth1 {color: #FF0000;} /* Red */
-.depth2 {color: #00FF00;} /* Green */
-.depth3 {color: pink;} /* Dark Blue */
-.depth4 {color: white;} /* Indigo */
-.depth5 {color: #00CED1;} /* Dark Turquoise */
-.depth6 {color: #008000;} /* Green */
-.depth7 {color: grey;} /* Orange Red */
-.person { cursor: pointer; }
-p { width: 360px; }
-#familyTreeDiv {
-  display: none;
+.depth0 {
+  color: yellow;
+}
+.depth1 {
+  color: #FF0000;
+}
+.depth2 {
+  color: #00FF00;
+}
+.depth3 {
+  color: pink;
+}
+.depth4 {
+  color: white;
+}
+.depth5 {
+  color: #00CED1;
+}
+.depth6 {
+  color: #008000;
+}
+.depth7 {
+  color: grey;
+}
+.person {
+  cursor: pointer;
+}
+p {
+  width: 360px;
 }
 #personListDiv {
   display: block;
+}
+#familyTreeDiv {
+  display: none;
 }
 #stickyHeader {
   position: -webkit-sticky;
@@ -254,6 +291,9 @@ p { width: 360px; }
   color: white;
   border: none;
   cursor: pointer;
+}
+.spouse-name {
+  font-size: small;
 }
 </style>
 </head>
