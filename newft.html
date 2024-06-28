@@ -100,15 +100,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Function to handle click event on a person
   function onPersonClick(event) {
+    console.log("Person clicked");
     const personId = parseInt(event.target.getAttribute('data-id'));
+    console.log(`Person ID: ${personId}`);
     const person = personMap.get(personId);
     if (person) {
+      console.log(`Person found: ${person.name}`);
       document.getElementById('selectedPerson').textContent = `${person.name}`;
       ftree = '';
       const parentDetails = displayParentDetails(person);
       displayFamilyTree(person);
-      document.getElementById('famtree').innerHTML = parentDetails + '<br><h2>Descendants</h2>' + ftree;
+      document.getElementById('ancestors').innerHTML = parentDetails;
+      document.getElementById('descendants').innerHTML = '<h2>Descendants</h2>' + ftree;
       attachEventListeners();
+      document.getElementById('personListDiv').style.display = 'none';
+      document.getElementById('familyTreeDiv').style.display = 'block';
     } else {
       console.error(`Error: Person with ID ${personId} not found.`);
     }
@@ -122,7 +128,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  // Example: Display family tree starting from a specific person (e.g., person with ID 6)
+  // Display list of persons sorted alphabetically
+  function displayPersonList() {
+    const personListDiv = document.getElementById('personList');
+    const sortedPersons = Array.from(personMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    for (const person of sortedPersons) {
+      const personElement = document.createElement('div');
+      personElement.classList.add('person');
+      personElement.setAttribute('data-id', person.id);
+      personElement.textContent = person.name;
+      personListDiv.appendChild(personElement);
+    }
+    attachEventListeners();
+  }
+
+  displayPersonList();
+
+  // Handle back button click
+  document.getElementById('backButton').addEventListener('click', () => {
+    console.log("Back button clicked");
+    document.getElementById('familyTreeDiv').style.display = 'none';
+    document.getElementById('personListDiv').style.display = 'block';
+  });
+
+  // Example: Display family tree starting from a specific person (e.g., person with ID 401)
   const rootPersonId = 401; // Change this to the actual root person ID
   const rootPerson = personMap.get(rootPersonId);
 
@@ -130,7 +159,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('selectedPerson').textContent = ` ${rootPerson.name}`;
     const parentDetails = displayParentDetails(rootPerson);
     displayFamilyTree(rootPerson);
-    document.getElementById('famtree').innerHTML = parentDetails + '<br><h2>Descendants</h2>' + ftree;
+    document.getElementById('ancestors').innerHTML = parentDetails;
+    document.getElementById('descendants').innerHTML = '<h2>Descendants</h2>' + ftree;
     attachEventListeners();
   } else {
     console.error(`Error: Root person with ID ${rootPersonId} not found.`);
@@ -138,7 +168,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 <style>
-body {background:black; color:white;  width:360px}
+body {background:black; color:white; width:360px}
 .depth0 {color: yellow;} /* Blue */
 .depth1 {color: #FF0000;} /* Red */
 .depth2 {color: #00FF00;} /* Green */
@@ -149,12 +179,44 @@ body {background:black; color:white;  width:360px}
 .depth7 {color: grey;} /* Orange Red */
 .person { cursor: pointer; }
 p {width:360px}
+#familyTreeDiv {
+  display: none;
+}
+#personListDiv {
+  display: block;
+}
+#stickyHeader {
+  position: sticky;
+  top: 0;
+  background: black;
+  z-index: 1;
+}
+#ancestors {
+  margin-top: 20px;
+}
+#familyTreeContent {
+  overflow-y: auto;
+}
 </style>
 </head>
 <body>
 
-<h2 id="selectedPerson"></h1>
-<p id='famtree'></p>
+<div id="personListDiv">
+  <h2>Persons List</h2>
+  <div id="personList"></div>
+</div>
+
+<div id="familyTreeDiv">
+  <div id="stickyHeader">
+    <h2 id="selectedPerson"></h2>
+    <button id="backButton">Back</button>
+    <div id="ancestors"></div>
+  </div>
+  <div id="familyTreeContent">
+  
+    <div id="descendants"></div>
+  </div>
+</div>
 
 </body>
 </html>
