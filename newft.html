@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Show back to top button after scrolling 100px
   document.getElementById('familyTreeContent').addEventListener('scroll', () => {
     const backToTopButton = document.getElementById('backToTopButton');
-    if (document.getElementById('familyTreeContent').scrollTop > 100) {
+    if (document.getElementById('familyTreeContent').scrollTop > 20) {
       backToTopButton.style.display = 'block';
     } else {
       backToTopButton.style.display = 'none';
