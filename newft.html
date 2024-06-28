@@ -151,6 +151,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById('personListDiv').style.display = 'block';
   });
 
+  // Handle back to top button click
+  document.getElementById('backToTopButton').addEventListener('click', () => {
+    document.getElementById('familyTreeContent').scrollTop = 0;
+  });
+
+  // Show back to top button after scrolling 100px
+  document.getElementById('familyTreeContent').addEventListener('scroll', () => {
+    const backToTopButton = document.getElementById('backToTopButton');
+    if (document.getElementById('familyTreeContent').scrollTop > 50) {
+      backToTopButton.style.display = 'block';
+    } else {
+      backToTopButton.style.display = 'none';
+    }
+  });
+
   // Example: Display family tree starting from a specific person (e.g., person with ID 401)
   const rootPersonId = 401; // Change this to the actual root person ID
   const rootPerson = personMap.get(rootPersonId);
@@ -195,7 +210,33 @@ p {width:360px}
   margin-top: 20px;
 }
 #familyTreeContent {
+  max-height: 600px; /* Set this to an appropriate value */
   overflow-y: auto;
+}
+#backButton {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 2;
+  background-color: #FF0000;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+}
+#backToTopButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2;
+  display: none;
+  background-color: #00CED1;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -209,14 +250,15 @@ p {width:360px}
 <div id="familyTreeDiv">
   <div id="stickyHeader">
     <h2 id="selectedPerson"></h2>
-    <button id="backButton">Back</button>
     <div id="ancestors"></div>
   </div>
   <div id="familyTreeContent">
-  
     <div id="descendants"></div>
   </div>
 </div>
+
+<button id="backButton">Back</button>
+<button id="backToTopButton">Top</button>
 
 </body>
 </html>
