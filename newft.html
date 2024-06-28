@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 <style>
-body {background:black; color:white;font-size:small }
+body {background:black; color:white; font-size:small; width:360px}
 .depth0 {color: yellow;} /* Blue */
 .depth1 {color: #FF0000;} /* Red */
 .depth2 {color: #00FF00;} /* Green */
@@ -146,14 +146,15 @@ body {background:black; color:white;font-size:small }
 .depth4 {color: white;} /* Indigo */
 .depth5 {color: #00CED1;} /* Dark Turquoise */
 .depth6 {color: #008000;} /* Green */
-.depth7 {color: #FF4500;} /* Orange Red */
+.depth7 {color: grey;} /* Orange Red */
 .person { cursor: pointer; }
+p {width:360px}
 </style>
 </head>
 <body>
 
-<h2 id="selectedPerson">Family Tree</h1>
-<p id='famtree'>My first paragraph.</p>
+<h2 id="selectedPerson"></h1>
+<p id='famtree'></p>
 
 </body>
 </html>
