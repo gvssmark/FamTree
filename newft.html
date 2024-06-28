@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const father = personMap.get(fatherId);
     const mother = personMap.get(motherId);
 
-    let parentDetails = '<h2>Ancestors</h2>';
+    let parentDetails = '';
     if (father) {
       parentDetails += `<div><strong>Father:</strong> <span class='person' data-id='${father.id}'>${father.name}</span> (${father.gender})</div>`;
     }
@@ -100,21 +100,24 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Function to handle click event on a person
   function onPersonClick(event) {
-    console.log("Person clicked");
     const personId = parseInt(event.target.getAttribute('data-id'));
-    console.log(`Person ID: ${personId}`);
     const person = personMap.get(personId);
     if (person) {
-      console.log(`Person found: ${person.name}`);
-      document.getElementById('selectedPerson').textContent = `${person.name}`;
+      let spouseDetails = '';
+      if (person.spouse) {
+        const spouseTitle = person.gender === 'M' ? 'Wife' : 'Husband';
+        spouseDetails = `<small>${spouseTitle}: ${person.spouse.name}</small>`;
+      }
+      document.getElementById('selectedPerson').innerHTML = `${person.name}<br>${spouseDetails}`;
       ftree = '';
       const parentDetails = displayParentDetails(person);
+      document.getElementById('ancestors').innerHTML = parentDetails ? '<h2>Ancestors</h2>' + parentDetails : '';
       displayFamilyTree(person);
-      document.getElementById('ancestors').innerHTML = parentDetails;
       document.getElementById('descendants').innerHTML = '<h2>Descendants</h2>' + ftree;
       attachEventListeners();
       document.getElementById('personListDiv').style.display = 'none';
       document.getElementById('familyTreeDiv').style.display = 'block';
+      document.getElementById('backButton').style.display = 'block';
     } else {
       console.error(`Error: Person with ID ${personId} not found.`);
     }
@@ -146,9 +149,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // Handle back button click
   document.getElementById('backButton').addEventListener('click', () => {
-    console.log("Back button clicked");
     document.getElementById('familyTreeDiv').style.display = 'none';
     document.getElementById('personListDiv').style.display = 'block';
+    document.getElementById('backButton').style.display = 'none';
   });
 
   // Handle back to top button click
@@ -159,7 +162,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Show back to top button after scrolling 100px
   document.getElementById('familyTreeContent').addEventListener('scroll', () => {
     const backToTopButton = document.getElementById('backToTopButton');
-    if (document.getElementById('familyTreeContent').scrollTop > 50) {
+    if (document.getElementById('familyTreeContent').scrollTop > 100) {
       backToTopButton.style.display = 'block';
     } else {
       backToTopButton.style.display = 'none';
@@ -171,10 +174,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const rootPerson = personMap.get(rootPersonId);
 
   if (rootPerson) {
-    document.getElementById('selectedPerson').textContent = ` ${rootPerson.name}`;
+    let spouseDetails = '';
+    if (rootPerson.spouse) {
+      const spouseTitle = rootPerson.gender === 'male' ? 'Wife' : 'Husband';
+      spouseDetails = `<small>${spouseTitle}: ${rootPerson.spouse.name}</small>`;
+    }
+    document.getElementById('selectedPerson').innerHTML = `${rootPerson.name}<br>${spouseDetails}`;
     const parentDetails = displayParentDetails(rootPerson);
+    document.getElementById('ancestors').innerHTML = parentDetails ? '<h2>Ancestors</h2>' + parentDetails : '';
     displayFamilyTree(rootPerson);
-    document.getElementById('ancestors').innerHTML = parentDetails;
     document.getElementById('descendants').innerHTML = '<h2>Descendants</h2>' + ftree;
     attachEventListeners();
   } else {
@@ -183,7 +191,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 </script>
 <style>
-body {background:black; color:white; width:360px}
+body {
+  background: black;
+  color: white;
+  width: 400px;
+}
 .depth0 {color: yellow;} /* Blue */
 .depth1 {color: #FF0000;} /* Red */
 .depth2 {color: #00FF00;} /* Green */
@@ -193,7 +205,7 @@ body {background:black; color:white; width:360px}
 .depth6 {color: #008000;} /* Green */
 .depth7 {color: grey;} /* Orange Red */
 .person { cursor: pointer; }
-p {width:360px}
+p { width: 360px; }
 #familyTreeDiv {
   display: none;
 }
@@ -201,41 +213,46 @@ p {width:360px}
   display: block;
 }
 #stickyHeader {
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
   background: black;
+  padding: 10px 0;
   z-index: 1;
 }
-#ancestors {
-  margin-top: 20px;
-}
 #familyTreeContent {
-  max-height: 600px; /* Set this to an appropriate value */
+  max-height: 100vh;
   overflow-y: auto;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+#familyTreeContent::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera*/
 }
 #backButton {
+  display: none;
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 2;
-  background-color: #FF0000;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007BFF;
   color: white;
   border: none;
-  padding: 10px;
-  border-radius: 50%;
   cursor: pointer;
 }
 #backToTopButton {
+  display: none;
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 2;
-  display: none;
-  background-color: #00CED1;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007BFF;
   color: white;
   border: none;
-  padding: 10px;
-  border-radius: 50%;
   cursor: pointer;
 }
 </style>
@@ -257,8 +274,8 @@ p {width:360px}
   </div>
 </div>
 
-<button id="backButton">Back</button>
-<button id="backToTopButton">Top</button>
+<button id="backButton">←</button>
+<button id="backToTopButton">↑</button>
 
 </body>
 </html>
