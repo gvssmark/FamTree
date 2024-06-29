@@ -99,6 +99,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       attachEventListeners();
       document.getElementById('personListDiv').style.display = 'none';
       document.getElementById('familyTreeDiv').style.display = 'block';
+      document.getElementById('backToTopButton').style.display = 'block';
+      
       checkOrientation(); // Check orientation to show/hide back button
     } else {
       console.error(`Error: Person with ID ${personId} not found.`);
@@ -268,18 +270,19 @@ p {
 #backButton {
   display: block;
   position: fixed;
-  top: 20px;
-  right: 20px;
+  top: 10px; /* Adjusted to make it fully visible */
+  right: 1px;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #007BFF;
+  background-color: red;
   color: white;
   border: none;
   cursor: pointer;
+  z-index: 3; /* Ensure it is above other elements */
 }
 #backToTopButton {
-  display: block;
+  display: none; /* Initially hidden */
   position: fixed;
   bottom: 20px;
   right: 20px;
@@ -290,6 +293,7 @@ p {
   color: white;
   border: none;
   cursor: pointer;
+  z-index: 3; /* Ensure it is above other elements */
 }
 .spouse-name {
   font-size: small;
@@ -301,7 +305,7 @@ p {
   background-color: #333;
   color: white;
   border: 1px solid #444;
-  width: 33.33%; /* Adjust width to fit within screen */
+  width: 20%; /* Adjust width to fit within screen */
   text-align: center;
 }
 .tab.active {
@@ -321,8 +325,8 @@ p {
     <button id="backButton">←</button>
     <h3 id="selectedPerson"></h3>
     <div id="tabs">
-      <div id="paternalTab" class="tab">Paternal Ancestors</div>
-      <div id="maternalTab" class="tab">Maternal Ancestors</div>
+      <div id="paternalTab" class="tab">Paternal</div>
+      <div id="maternalTab" class="tab">Maternal</div>
       <div id="descendantsTab" class="tab">Descendants</div>
     </div>
     <div id="ancestors">
