@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+async function getMyData() {
+  const url = "https://script.google.com/macros/s/AKfycbycChH5D78kNO3bJYy1rvVZ0tvQWsXgloD19lYYZ3-5m6Q37szyPNqAIZRNCA2ZG1An/exec";
+  const response = await fetch(url);
+  const data = await response.json();
+  const tempData = data["user"];
+  return tempData.map(a => [a.id, a.name, a.gender, a.fid, a.mid, a.sid, a.photo]);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const familyData = await getMyData();
+
+  class Person {
+    constructor(id, name, gender) {
+      this.id = id;
+      this.name = name;
+      this.gender = gender;
+      this.children = [];
+      this.fatherId = null;
+      this.motherId = null;
+      this.spouseId = null; // Store spouse ID separately
+    }
+  }
+
+  // Create a map to store Person objects by their ID
+  const personMap = new Map();
+
+  // Create Person objects and add them to the map
+  for (const [id, name, gender, fatherId, motherId, spouseId] of familyData) {
+    const person = new Person(id, name, gender);
+    person.fatherId = fatherId;
+    person.motherId = motherId;
+    person.spouseId = spouseId;
+    personMap.set(id, person);
+  }
+
+  // Establish spouse relationships
+  for (const person of personMap.values()) {
+    const spouseId = person.spouseId;
+
+    if (spouseId !== null) {
+      const spouse = personMap.get(spouseId);
+
+      if (spouse) {
+        person.spouse = spouse;
+        spouse.spouse = person;
+      } else {
+        console.error(`Error: Person with ID ${spouseId} not found for spouse link.`);
+      }
+    }
+  }
+
+  // Link parents and children
+  for (const person of personMap.values()) {
+    const father = personMap.get(person.fatherId);
+    const mother = personMap.get(person.motherId);
+
+    if (father) {
+      father.children.push(person);
+    }
+
+    if (mother) {
+      mother.children.push(person);
+    }
+  }
+
+  let ftree = '';
+  // Function to display family tree starting from a person
+  function displayFamilyTree(person, depth = 0) {
+    const spaces = "&nbsp ".repeat(depth * 1.5);
+    ftree += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
+    for (const child of person.children) {
+      displayFamilyTree(child, depth + 1);
+    }
+  }
+
+  // Function to handle click event on a person
+  function onPersonClick(event) {
+    const personId = parseInt(event.target.getAttribute('data-id'));
+    const person = personMap.get(personId);
+    if (person) {
+      let spouseDetails = '';
+      if (person.spouse) {
+        const spouseTitle = person.gender === 'M' ? 'Wife' : 'Husband';
+        spouseDetails = `<small class="spouse-name" data-id='${person.spouse.id}'>${spouseTitle}: ${person.spouse.name}</small>`;
+      }
+      document.getElementById('selectedPerson').innerHTML = `${person.name}<br>${spouseDetails}`;
+      ftree = '';
+      document.getElementById('paternalAncestors').innerHTML = '<h2>Paternal Ancestors</h2>';
+      document.getElementById('maternalAncestors').innerHTML = '<h2>Maternal Ancestors</h2>';
+      if (person.fatherId) displayAncestors(personMap.get(person.fatherId), 'paternalAncestors');
+      if (person.motherId) displayAncestors(personMap.get(person.motherId), 'maternalAncestors');
+      displayFamilyTree(person);
+      document.getElementById('descendants').innerHTML = '<h3>Descendants</h3>' + ftree;
+      attachEventListeners();
+      document.getElementById('personListDiv').style.display = 'none';
+      document.getElementById('familyTreeDiv').style.display = 'block';
+      checkOrientation(); // Check orientation to show/hide back button
+    } else {
+      console.error(`Error: Person with ID ${personId} not found.`);
+    }
+  }
+
+  // Function to display ancestors in the specified element
+  function displayAncestors(person, elementId, depth = 0) {
+    const spaces = "&nbsp ".repeat(depth * 1.5);
+    document.getElementById(elementId).innerHTML += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
+    if (person.fatherId) displayAncestors(personMap.get(person.fatherId), elementId, depth + 1);
+    if (person.motherId) displayAncestors(personMap.get(person.motherId), elementId, depth + 1);
+  }
+
+  // Function to attach event listeners to person elements
+  function attachEventListeners() {
+    const personElements = document.querySelectorAll('.person, .spouse-name');
+    personElements.forEach(personElement => {
+      personElement.addEventListener('click', onPersonClick);
+    });
+  }
+
+  // Display list of persons sorted alphabetically
+  function displayPersonList() {
+    const personListDiv = document.getElementById('personList');
+    const sortedPersons = Array.from(personMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+    for (const person of sortedPersons) {
+      const personElement = document.createElement('div');
+      personElement.classList.add('person');
+      personElement.setAttribute('data-id', person.id);
+      personElement.textContent = person.name;
+      personListDiv.appendChild(personElement);
+    }
+    attachEventListeners();
+  }
+
+  displayPersonList();
+
+  // Handle back button click
+  document.getElementById('backButton').addEventListener('click', () => {
+    document.getElementById('familyTreeDiv').style.display = 'none';
+    document.getElementById('personListDiv').style.display = 'block';
+    document.getElementById('backButton').style.display = 'none';
+  });
+
+  // Handle back to top button click
+  document.getElementById('backToTopButton').addEventListener('click', () => {
+    document.getElementById('familyTreeContent').scrollTop = 0;
+  });
+
+  // Show back to top button after scrolling 20px
+  document.getElementById('familyTreeContent').addEventListener('scroll', () => {
+    const backToTopButton = document.getElementById('backToTopButton');
+    if (document.getElementById('familyTreeContent').scrollTop > 20) {
+      backToTopButton.style.display = 'block';
+    } else {
+      backToTopButton.style.display = 'block'; // Ensure it's always available
+    }
+  });
+
+  // Function to check screen orientation and show/hide back button
+  function checkOrientation() {
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    if (isLandscape) {
+      document.getElementById('backButton').style.display = 'block';
+    } else {
+      document.getElementById('backButton').style.display = 'block';
+    }
+  }
+
+  // Listen for orientation changes
+  window.addEventListener("orientationchange", checkOrientation);
+
+  // Initial check for orientation
+  checkOrientation();
+
+  // Example: Display family tree starting from a specific person (e.g., person with ID 401)
+  const rootPersonId = 401; // Change this to the actual root person ID
+  const rootPerson = personMap.get(rootPersonId);
+
+  if (rootPerson) {
+    let spouseDetails = '';
+    if (rootPerson.spouse) {
+      const spouseTitle = rootPerson.gender === 'male' ? 'Wife' : 'Husband';
+      spouseDetails = `<small class="spouse-name" data-id='${rootPerson.spouse.id}'>${spouseTitle}: ${rootPerson.spouse.name}</small>`;
+    }
+    const HTML = `${rootPerson.name}<br>${spouseDetails}`;
+    document.getElementById('selectedPerson').innerHTML = HTML;
+    document.getElementById('paternalAncestors').innerHTML = '<h2>Paternal Ancestors</h2>';
+    document.getElementById('maternalAncestors').innerHTML = '<h2>Maternal Ancestors</h2>';
+    if (rootPerson.fatherId) displayAncestors(personMap.get(rootPerson.fatherId), 'paternalAncestors');
+    if (rootPerson.motherId) displayAncestors(personMap.get(rootPerson.motherId), 'maternalAncestors');
+    displayFamilyTree(rootPerson);
+    document.getElementById('descendants').innerHTML = '<h3>Descendants</h3>' + ftree;
+    attachEventListeners();
+  } else {
+    console.error(`Error: Root person with ID ${rootPersonId} not found.`);
+  }
+});
+</script>
+<style>
+body {
+  background: black;
+  color: white;
+  width: 360px;
+}
+.depth0 {
+  color: yellow;
+}
+.depth1 {
+  color: #FF0000;
+}
+.depth2 {
+  color: #00FF00;
+}
+.depth3 {
+  color: pink;
+}
+.depth4 {
+  color: white;
+}
+.depth5 {
+  color: #00CED1;
+}
+.depth6 {
+  color: #008000;
+}
+.depth7 {
+  color: grey;
+}
+.person {
+  cursor: pointer;
+}
+p {
+  width: 360px;
+}
+#personListDiv {
+  display: block;
+}
+#familyTreeDiv {
+  display: none;
+}
+#stickyHeader {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  background: black;
+  padding: 10px 0;
+  z-index: 1;
+}
+#selectedPerson, #tabs {
+  position: sticky;
+  top: 0;
+  background: black;
+  z-index: 2;
+  padding: 5px 0;
+}
+#familyTreeContent {
+  max-height: 100vh;
+  overflow-y: auto;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+#familyTreeContent::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera*/
+}
+#backButton {
+  display: block;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+#backToTopButton {
+  display: block;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.spouse-name {
+  font-size: small;
+}
+.tab {
+  display: inline-block;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #333;
+  color: white;
+  border: 1px solid #444;
+  width: 33.33%; /* Adjust width to fit within screen */
+  text-align: center;
+}
+.tab.active {
+  background-color: #007BFF;
+}
+</style>
+</head>
+<body>
+
+<div id="personListDiv">
+  <h2>Persons List</h2>
+  <div id="personList"></div>
+</div>
+
+<div id="familyTreeDiv">
+  <div id="stickyHeader">
+    <button id="backButton">←</button>
+    <h3 id="selectedPerson"></h3>
+    <div id="tabs">
+      <div id="paternalTab" class="tab">Paternal Ancestors</div>
+      <div id="maternalTab" class="tab">Maternal Ancestors</div>
+      <div id="descendantsTab" class="tab">Descendants</div>
+    </div>
+    <div id="ancestors">
+      <div id="paternalAncestors"></div>
+      <div id="maternalAncestors" style="display:none;"></div>
+      <div id="descendants" style="display:none;"></div>
+    </div>
+  </div>
+  <div id="familyTreeContent"></div>
+</div>
+
+<button id="backToTopButton">↑</button>
+
+<script>
+document.getElementById('paternalTab').addEventListener('click', () => {
+  document.getElementById('paternalAncestors').style.display = 'block';
+  document.getElementById('maternalAncestors').style.display = 'none';
+  document.getElementById('descendants').style.display = 'none';
+  document.getElementById('paternalTab').classList.add('active');
+  document.getElementById('maternalTab').classList.remove('active');
+  document.getElementById('descendantsTab').classList.remove('active');
+});
+
+document.getElementById('maternalTab').addEventListener('click', () => {
+  document.getElementById('paternalAncestors').style.display = 'none';
+  document.getElementById('maternalAncestors').style.display = 'block';
+  document.getElementById('descendants').style.display = 'none';
+  document.getElementById('paternalTab').classList.remove('active');
+  document.getElementById('maternalTab').classList.add('active');
+  document.getElementById('descendantsTab').classList.remove('active');
+});
+
+document.getElementById('descendantsTab').addEventListener('click', () => {
+  document.getElementById('paternalAncestors').style.display = 'none';
+  document.getElementById('maternalAncestors').style.display = 'none';
+  document.getElementById('descendants').style.display = 'block';
+  document.getElementById('paternalTab').classList.remove('active');
+  document.getElementById('maternalTab').classList.remove('active');
+  document.getElementById('descendantsTab').classList.add('active');
+});
+</script>
+
+</body>
+</html>
