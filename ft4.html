@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+async function getMyData() {
+  const url = "https://script.google.com/macros/s/AKfycbycChH5D78kNO3bJYy1rvVZ0tvQWsXgloD19lYYZ3-5m6Q37szyPNqAIZRNCA2ZG1An/exec";
+  const response = await fetch(url);
+  const data = await response.json();
+  const tempData = data["user"];
+  return tempData.map(a => [a.id, a.name, a.gender, a.fid, a.mid, a.sid, a.photo]);
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const familyData = await getMyData();
+
+  class Person {
+    constructor(id, name, gender) {
+      this.id = id;
+      this.name = name;
+      this.gender = gender;
+      this.children = [];
+      this.fatherId = null;
+      this.motherId = null;
+      this.spouseId = null;
+    }
+  }
+
+  const personMap = new Map();
+  for (const [id, name, gender, fatherId, motherId, spouseId] of familyData) {
+    const person = new Person(id, name, gender);
+    person.fatherId = fatherId;
+    person.motherId = motherId;
+    person.spouseId = spouseId;
+    personMap.set(id, person);
+  }
+
+  for (const person of personMap.values()) {
+    const spouseId = person.spouseId;
+    if (spouseId !== null) {
+      const spouse = personMap.get(spouseId);
+      if (spouse) {
+        person.spouse = spouse;
+        spouse.spouse = person;
+      } else {
+        console.error(`Error: Person with ID ${spouseId} not found for spouse link.`);
+      }
+    }
+  }
+
+  for (const person of personMap.values()) {
+    const father = personMap.get(person.fatherId);
+    const mother = personMap.get(person.motherId);
+    if (father) father.children.push(person);
+    if (mother) mother.children.push(person);
+  }
+
+  let ftree = '';
+
+  function displayFamilyTree(person, depth = 0) {
+    const spaces = "&nbsp ".repeat(depth * 1.5);
+    ftree += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
+    for (const child of person.children) {
+      displayFamilyTree(child, depth + 1);
+    }
+  }
+
+  function onPersonClick(event) {
+    const personId = parseInt(event.target.getAttribute('data-id'));
+    const person = personMap.get(personId);
+    if (person) {
+      let spouseDetails = '';
+      if (person.spouse) {
+        const spouseTitle = person.gender === 'M' ? 'Wife' : 'Husband';
+        spouseDetails = `<small class="spouse-name" data-id='${person.spouse.id}'>${spouseTitle}: ${person.spouse.name}</small>`;
+      }
+      document.getElementById('selectedPerson').innerHTML = `${person.name}<br>${spouseDetails}`;
+      ftree = '';
+      document.getElementById('paternalAncestors').innerHTML = '<h2>Paternal Ancestors</h2>';
+      document.getElementById('maternalAncestors').innerHTML = '<h2>Maternal Ancestors</h2>';
+      if (person.fatherId) displayAncestors(personMap.get(person.fatherId), 'paternalAncestors');
+      if (person.motherId) displayAncestors(personMap.get(person.motherId), 'maternalAncestors');
+      displayFamilyTree(person);
+      document.getElementById('descendants').innerHTML = '<h3>Descendants</h3>' + ftree;
+      attachEventListeners();
+      document.getElementById('personListDiv').style.display = 'none';
+      document.getElementById('familyTreeDiv').style.display = 'block';
+      checkOrientation();
+    } else {
+      console.error(`Error: Person with ID ${personId} not found.`);
+    }
+  }
+
+  function displayAncestors(person, elementId, depth = 0) {
+    const spaces = "&nbsp ".repeat(depth * 1.5);
+    document.getElementById(elementId).innerHTML += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
+    if (person.fatherId) displayAncestors(personMap.get(person.fatherId), elementId, depth + 1);
+    if (person.motherId) displayAncestors(personMap.get(person.motherId), elementId, depth + 1);
+  }
+
+  function attachEventListeners() {
+    const personElements = document.querySelectorAll('.person, .spouse-name');
+    personElements.forEach(personElement => {
+      personElement.addEventListener('click', onPersonClick);
+    });
+  }
+
+  function displayPersonList(surname) {
+    const personListDiv = document.getElementById('personList');
+    personListDiv.innerHTML = ''; // Clear previous list
+    const filteredPersons = Array.from(personMap.values()).filter(person => person.name.split(' ')[0] === surname);
+    const sortedPersons = filteredPersons.sort((a, b) => a.name.localeCompare(b.name));
+    for (const person of sortedPersons) {
+      const personElement = document.createElement('div');
+      personElement.classList.add('person');
+      personElement.setAttribute('data-id', person.id);
+      personElement.textContent = person.name;
+      personListDiv.appendChild(personElement);
+    }
+    attachEventListeners();
+  }
+
+  function displaySurnameList() {
+    const surnameListDiv = document.getElementById('surnameList');
+    const surnameSet = new Set(familyData.map(a => a[1].split(' ')[0]));
+    const sortedSurnames = Array.from(surnameSet).sort();
+    for (let i = 0; i < sortedSurnames.length; i += 3) {
+      const row = document.createElement('div');
+      row.classList.add('surname-row');
+      for (let j = 0; j < 3; j++) {
+        if (i + j < sortedSurnames.length) {
+          const surnameElement = document.createElement('div');
+          surnameElement.classList.add('surname');
+          surnameElement.textContent = sortedSurnames[i + j];
+          surnameElement.addEventListener('click', () => {
+            displayPersonList(sortedSurnames[i + j]);
+            document.getElementById('surnameListDiv').style.display = 'none';
+            document.getElementById('personListDiv').style.display = 'block';
+          });
+          row.appendChild(surnameElement);
+        }
+      }
+      surnameListDiv.appendChild(row);
+    }
+  }
+
+  displaySurnameList();
+
+  document.getElementById('backButton').addEventListener('click', () => {
+    document.getElementById('familyTreeDiv').style.display = 'none';
+    document.getElementById('surnameListDiv').style.display = 'block';
+    document.getElementById('backButton').style.display = 'none';
+  });
+
+  document.getElementById('backToPersonListButton').addEventListener('click', () => {
+    document.getElementById('personListDiv').style.display = 'none';
+    document.getElementById('surnameListDiv').style.display = 'block';
+  });
+
+  document.getElementById('backToTopButton').addEventListener('click', () => {
+    document.getElementById('familyTreeContent').scrollTop = 0;
+  });
+
+  document.getElementById('familyTreeContent').addEventListener('scroll', () => {
+    const backToTopButton = document.getElementById('backToTopButton');
+    if (document.getElementById('familyTreeContent').scrollTop > 20) {
+      backToTopButton.style.display = 'block';
+    } else {
+      backToTopButton.style.display = 'none';
+    }
+  });
+
+  function checkOrientation() {
+    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
+    if (isLandscape) {
+      document.getElementById('backButton').style.display = 'block';
+    } else {
+      document.getElementById('backButton').style.display = 'block';
+    }
+  }
+
+  window.addEventListener("orientationchange", checkOrientation);
+  checkOrientation();
+
+  const rootPersonId = 401;
+  const rootPerson = personMap.get(rootPersonId);
+
+  if (rootPerson) {
+    let spouseDetails = '';
+    if (rootPerson.spouse) {
+      const spouseTitle = rootPerson.gender === 'male' ? 'Wife' : 'Husband';
+      spouseDetails = `<small class="spouse-name" data-id='${rootPerson.spouse.id}'>${spouseTitle}: ${rootPerson.spouse.name}</small>`;
+    }
+    const HTML = `${rootPerson.name}<br>${spouseDetails}`;
+    document.getElementById('selectedPerson').innerHTML = HTML;
+    document.getElementById('paternalAncestors').innerHTML = '<h2>Paternal Ancestors</h2>';
+    document.getElementById('maternalAncestors').innerHTML = '<h2>Maternal Ancestors</h2>';
+    if (rootPerson.fatherId) displayAncestors(personMap.get(rootPerson.fatherId), 'paternalAncestors');
+    if (rootPerson.motherId) displayAncestors(personMap.get(rootPerson.motherId), 'maternalAncestors');
+    displayFamilyTree(rootPerson);
+    document.getElementById('descendants').innerHTML = '<h3>Descendants</h3>' + ftree;
+    attachEventListeners();
+  } else {
+    console.error(`Error: Root person with ID ${rootPersonId} not found.`);
+  }
+});
+</script>
+<style>
+body {
+  background: black;
+  color: white;
+  width: 360px;
+}
+.depth0 {
+  color: yellow;
+}
+.depth1 {
+  color: #FF0000;
+}
+.depth2 {
+  color: #00FF00;
+}
+.depth3 {
+  color: pink;
+}
+.depth4 {
+  color: white;
+}
+.depth5 {
+  color: #00CED1;
+}
+.depth6 {
+  color: #008000;
+}
+.depth7 {
+  color: grey;
+}
+.person {
+  cursor: pointer;
+}
+p {
+  width: 360px;
+}
+#surnameListDiv {
+  display: block;
+}
+#personListDiv {
+  display: none;
+}
+#familyTreeDiv {
+  display: none;
+}
+#stickyHeader {
+  position: -webkit-sticky;
+  position1: sticky;
+  top: 0;
+  background: black;
+  padding: 10px 0;
+  z-index: 1;
+}
+#fixedHeader {
+  position: sticky;
+  top: 0;
+  background: black;
+  z-index: 2;
+  padding: 5px 0;
+}
+#familyTreeContent {
+  max-height: 100vh;
+  overflow-y: auto;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+#familyTreeContent::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari, Opera*/
+}
+#backButton {
+  display: block;
+  position: fixed;
+  top: 1px; /* Adjusted to make it fully visible */
+  right: 1px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  z-index: 3; /* Ensure it is above other elements */
+}
+#backToPersonListButton {
+  display: block;
+  position: fixed;
+  top: 50px; /* Adjusted to make it fully visible */
+  right: 1px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  z-index: 3; /* Ensure it is above other elements */
+}
+#backToTopButton {
+  display: none; /* Ensure it is visible */
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  z-index: 3; /* Ensure it is above other elements */
+}
+.surname {
+  cursor: pointer;
+  display: inline-block;
+  width: 33.33%;
+}
+.surname-row {
+  display: flex;
+  justify-content: space-between;
+}
+.spouse-name {
+  font-size: small;
+}
+.tab {
+  display: inline-block;
+  padding: 10px;
+  cursor: pointer;
+  background-color: #333;
+  color: white;
+  border: 1px solid #444;
+  width: 25%; /* Adjust width to fit within screen */
+  text-align: center;
+}
+.tab.active {
+  background-color: #007BFF;
+}
+</style>
+</head>
+<body>
+
+<div id="surnameListDiv">
+  <h2>Surname List</h2>
+  <div id="surnameList"></div>
+</div>
+
+<div id="personListDiv">
+  <h2>Persons List</h2>
+  <div id="personList"></div>
+  <button id="backToPersonListButton">←</button>
+</div>
+
+<div id="familyTreeDiv">
+  <div id="fixedHeader">
+    <button id="backButton">←</button>
+    <h3 id="selectedPerson"></h3>
+    <div id="tabs">
+      <div id="paternalTab" class="tab">Paternal</div>
+      <div id="maternalTab" class="tab">Maternal</div>
+      <div id="descendantsTab" class="tab">Descendants</div>
+    </div>
+  </div>  
+    <div id="ancestors">
+      <div id="paternalAncestors"></div>
+      <div id="maternalAncestors" style="display:none;"></div>
+      <div id="descendants" style="display:none;"></div>
+    </div>
+  
+  <div id="familyTreeContent"></div>
+</div>
+
+<button id="backToTopButton">↑</button>
+
+<script>
+document.getElementById('paternalTab').addEventListener('click', () => {
+  document.getElementById('paternalAncestors').style.display = 'block';
+  document.getElementById('maternalAncestors').style.display = 'none';
+  document.getElementById('descendants').style.display = 'none';
+  document.getElementById('paternalTab').classList.add('active');
+  document.getElementById('maternalTab').classList.remove('active');
+  document.getElementById('descendantsTab').classList.remove('active');
+});
+
+document.getElementById('maternalTab').addEventListener('click', () => {
+  document.getElementById('paternalAncestors').style.display = 'none';
+  document.getElementById('maternalAncestors').style.display = 'block';
+  document.getElementById('descendants').style.display = 'none';
+  document.getElementById('paternalTab').classList.remove('active');
+  document.getElementById('maternalTab').classList.add('active');
+  document.getElementById('descendantsTab').classList.remove('active');
+});
+
+document.getElementById('descendantsTab').addEventListener('click', () => {
+  document.getElementById('paternalAncestors').style.display = 'none';
+  document.getElementById('maternalAncestors').style.display = 'none';
+  document.getElementById('descendants').style.display = 'block';
+  document.getElementById('paternalTab').classList.remove('active');
+  document.getElementById('maternalTab').classList.remove('active');
+  document.getElementById('descendantsTab').classList.add('active');
+});
+</script>
+
+</body>
+</html>
