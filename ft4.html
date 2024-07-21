@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -63,7 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function displayFamilyTree(person, depth = 0) {
     const spaces = "&nbsp ".repeat(depth * 1.5);
-    ftree += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
+    ftree += `<span class='depth${depth} person' data-id='${person.id}'>${depth+1}${spaces} ${person.name}</span> (${person.gender})<br>`;
     for (const child of person.children) {
       displayFamilyTree(child, depth + 1);
     }
@@ -97,7 +98,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function displayAncestors(person, elementId, depth = 0) {
     const spaces = "&nbsp ".repeat(depth * 1.5);
-    document.getElementById(elementId).innerHTML += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
+    document.getElementById(elementId).innerHTML += `<span class='depth${depth} person' data-id='${person.id}'>${depth+1}${spaces} ${person.name}</span> (${person.gender})<br>`;
     if (person.fatherId) displayAncestors(personMap.get(person.fatherId), elementId, depth + 1);
     if (person.motherId) displayAncestors(personMap.get(person.motherId), elementId, depth + 1);
   }
