@@ -1,33 +1,178 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Achanta Family Tree</title>
-   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Family Tree</title>
   <style>
-    body { font-family: Arial, sans-serif; }
-    .person { margin: 10px; cursor: pointer; display: flex; align-items: center; }
-    .photo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid #bbb; }
-    .details { display: flex; flex-direction: column; }
-    .children { margin-left: 20px; display: none; border-left: 2px dotted #aaa; padding-left: 10px; }
-    .person .descendent-toggle { margin-left: 10px; font-size: 1em; }
-    .expanded > .children { display: block; }
-    .person.toggleable:hover { background: #f0f8ff; }
-    .spouse-name {color:red; font-size: .9em}
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+
+    h2 {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+
+    #tree-root {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      max-width: 1200px;
+      margin: 0 auto;
+      overflow-x: auto;
+    }
+
+    .person {
+      margin: 10px 0;
+      padding: 10px;
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .person.toggleable {
+      cursor: pointer;
+    }
+
+    .person.toggleable:hover {
+      background: #f0f8ff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .photo {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 15px;
+      border: 3px solid #667eea;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      transition: transform 0.3s ease;
+    }
+
+    .person:hover .photo {
+      transform: scale(1.1);
+    }
+
+    .details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .name-line {
+      font-size: 1em;
+      color: #333;
+    }
+
+    .name-line strong {
+      font-size: 1.05em;
+    }
+
+    .dob-inline {
+      font-size: 0.9em;
+      color: #666;
+      margin-left: 8px;
+      font-style: italic;
+    }
+
+    .spouse-name {
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    .descendent-toggle {
+      margin-right: 10px;
+      font-size: 1.2em;
+      color: #667eea;
+      transition: transform 0.3s ease;
+      display: inline-block;
+      width: 20px;
+      text-align: center;
+    }
+
+    .children {
+      margin-left: 10px;
+      display: none;
+      border-left: 2px dotted #667eea;
+      padding-left: 20px;
+      margin-top: 5px;
+    }
+
+    .expanded > .children {
+      display: block;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .photo {
+        width: 50px;
+        height: 50px;
+      }
+
+      .children {
+        margin-left: 10px;
+        padding-left: 10px;
+      }
+
+      .name-line {
+        font-size: 0.95em;
+      }
+    }
+    
+    .spouse-name {color:red; font-size:.8em}
+    .dob-inline {color:blue; font-size:.8em}
   </style>
 </head>
 <body>
-  <h3>Achanta Venkata Suryanarayana Rao</h3>
+  <h2>Family Tree - Achanta Venkata Suryanarayana Rao</h2>
   <div id="tree-root"></div>
 
-  <script src="https://gvssmark.github.io/FamTree/omkardata.json"></script>
+  <script src="https://gvssmark.github.io/FamTree/omkardata11.json"></script>
   <script>
+  
+  omkardata=[
+    ["Person ID","Name","Gender","Father ID","Mother ID","Spouse ID","DOB"],[1,"Achanta Venkata Suryanarayana Rao","M","","",2,""],[2,"Achanta Sithmahalakshmi ","F","","",1,""],[3,"Achanta Govind \n","M",1,2,4,""],[4,"Achanta Nagamani","F","","",3,""],[5,"Achanta Omkar","M",1,2,6,"2025-11-23T18:30:00.000Z"],[6,"Achanta Satya","F","","",5,"2025-02-22T18:30:00.000Z"],[7,"Achanta Nagesh","M",1,2,8,""],[8,"Achanta Lakshmi","F","","",7,""],[9,"Achanta Sreekar","M",1,2,10,""],[10,"Achanta Himagiri","F",14,13,9,""],[11,"Achanta Venkata Ranga Rao (Late)","F",1,2,12,""],[12,"Achanta Satyavathi","M","","",11,""],[13,"Namburi Kumari","F",1,2,14,""],[14,"Namburi  Venkata Surya Satyanarayana (Late)","M","","",13,""],[15,"Gogula Tayaru (Late)","F",1,2,16,""],[16,"Gogula Venkateswara Rao (Late)","M","","",15,""],[17,"Nunna Leela ","F",1,2,18,""],[18,"Nunna Raghu Rama Rao (Late)","M","","",17,""],[19,"Pullipudi Jayanthi","F",1,2,20,""],[20,"Pullipudi Sarveswara Rao","M","","",19,""],[21,"Achanta Kishore","M",3,4,22,""],[22,"Achanta Anu","F","","",21,""],[23,"Achanta Mahesh","M",3,4,24,""],[24,"Achanta Radha","F","","",23,""],[25,"Karumuri Lakshmi","F",3,4,26,""],[26,"Karumuri Ravi","M","","",25,""],[27,"Atyam Madhavi","F",3,4,28,""],[28,"Atyam Venkateswara Aro","M","","",27,""],[29,"Achanta Ikshita","F",21,22,"",""],[30,"Achanta Ishya","F",21,22,"",""],[31,"Karumuri Chaitanya","M",26,25,33,""],[32,"Karumuri Harsha","M",26,25,34,""],[33,"Karumuri Samhitha","F","","",31,""],[34,"Karumuri Preethi","F","","",32,""],[35,"Karumuri Sia","F",31,33,"",""],[36,"Thummalapalli Kundavi","F",28,27,37,""],[37,"Thummalapalli Sai Krishna","M","","",36,""],[38,"Achanta Mahidha","F",23,24,"",""],[39,"Achanta Rishita","F",23,24,"",""],[40,"Koppuravuri Sailaja","F",5,6,41,""],[41,"Koppuravuri Vamsi","M","","",40,""],[42,"Achanta Kalyan","F",5,6,43,""],[43,"Achanta Priya","M","","",42,""],[44,"Koppuravuri Veda","F",41,40,"",""],[45,"Koppuravuri Sruthi","F",41,40,"",""],[46,"Achanta Adithi","F",42,43,"",""],[47,"Achanta Aadya","F",42,43,"",""],[48,"Tumpudi Sowjanya","F",7,8,49,""],[49,"Tumpudi Jayaram","M","","",48,""],[50,"Achanta Prasanth","M",7,8,51,""],[51,"Achanta Pooja","F","","",50,""],[52,"Tumpudi Hitesh","M",49,48,"",""],[53,"Tumpudi Asrith","M",49,48,"",""],[54,"Achanta Rohit","M",9,10,"",""],[55,"Gummadivalli Sravya","F",9,10,56,""],[56,"Gummadivalli Naresh Babu","M","","",55,""],[57,"Achanta Dia","F","","","",""],[58,"Achanta Srinu","M",11,12,59,""],[59,"Achanta Vijaya","F","","",58,""],[60,"Nunna Padma","F",11,12,61,""],[61,"Nunna Venkateswara Aro","M","","",60,""],[62,"Nunna Vaibhav","M",61,60,"",""],[63,"Achanta Manya","F",58,59,"",""],[64,"Namburi Narayana Rao","M",14,13,65,""],[65,"Namburi Jyothi","F","","",64,""],[66,"Namburi Ramachandra Rao","M",14,13,67,""],[67,"Namburi Rekha","F","","",66,""],[68,"Boda Mahathi","F",66,67,69,""],[69,"Boda Sandeep","M","","",68,""],[70,"Boda Yuvansh","M",69,68,"",""],[71,"Boda Yashika","F",69,68,"",""],[72,"Gogula Srinivas","M",16,15,73,""],[73,"Gogula Devi","F","","",72,""],[74,"Manepalli Madhavi","F",16,15,75,""],[75,"Manepalli Satyanarayana","M","","",74,""],[76,"Kotha Vijaya","F",16,15,77,""],[77,"Kotha Sreshti","M","","",76,""],[78,"Gogula Ramakrishna","M",16,15,79,""],[79,"Gogula Sreshti","F","","",78,""],[80,"Gogula Prudhvi","M",72,73,81,""],[81,"Gogula Aparna","F","","",80,""],[82,"Gogula Sowryanandan","M",80,81,"",""],[83,"Perumalla Rupini","F",72,73,84,""],[84,"Perumalla Manikhanta","M","","",83,""],[85,"Perumalla Abhiram","M",84,83,"",""],[86,"Perumalla Aadya","F",84,83,"",""],[87,"Penugonda Sushma","F",75,74,88,""],[88,"Penugonda Viswa Kumar","M","","",87,""],[89,"Penugonda Srinikha","M",88,87,"",""],[90,"Penugonda Sreyansh","M",88,87,"",""],[91,"Manepalli Manikhanta","M",75,74,92,""],[92,"Manepalli Prasanna","F","","",91,""],[93,"Kotha Pratheek","M",77,76,94,""],[94,"Kotha Nikhita","F","","",93,""],[95,"Kotha Anvitha","F",93,94,"",""],[96,"Grandhi Siri","F",77,76,97,""],[97,"Grandhi Bhargava Shashank","M","","",96,""],[98,"Grandhi Medha","F",97,96,"",""],[99,"Grandhi Baby","F",97,96,"",""],[100,"Manda Manga Raju","F",18,17,101,""],[101,"Manda Venkata Nageswara Aro","M","","",100,""],[102,"Manda Badari","M",101,100,103,""],[103,"Manda Swathi","F","","",102,""],[104,"Manda Manideep","M",101,100,105,""],[105,"Manda Bhavya","F","","",104,""],[106,"Manda Kusuma Nayana","F",102,103,"",""],[107,"Manda Pranav","M",104,105,"",""],[108,"Tadikonda Chandramukhi","F",18,17,109,""],[109,"Tadikonda Sundaram","M","","",108,""],[110,"Tadikonda Meghana","F",109,108,"",""],[111,"Pullipudi Upendra","M",20,19,112,""],[112,"Pullipudi Shilpa","F","","",111,""],[113,"Pullipudi Maheeja","M",111,112,"",""],[114,"Pullipudi Srihith","M",111,112,"",""],[115,"Manda Srividya","F",20,19,116,""],[116,"Manda Venkata Nageswara Rao","M","","",115,""],[117,"Manda Varshini","F",116,115,"",""]]
+  
+    // Convert array data to objects
     function arrayToObjects(dataArr) {
       const keys = dataArr[0];
       return dataArr.slice(1).map(row => {
         let obj = {};
-        keys.forEach((k, idx) => { obj[k.replace(' ', '').replace('\n','')] = row[idx]; });
+        keys.forEach((k, idx) => { 
+          obj[k.replace(/\s/g, '').replace('\n','')] = row[idx]; 
+        });
         return obj;
       });
     }
@@ -36,114 +181,150 @@
     let byId = {};
 
     function initData() {
-      people = arrayToObjects(omkardata);
-      people.forEach(person => { byId[person.PersonID] = person; });
+      people = arrayToObjects(omkardata); // omkardata should include DOB column for each person
+      people.forEach(person => { 
+        byId[person.PersonID] = person; 
+      });
+    }
+
+    function getSpouse(spouseID) {
+      if (!spouseID || spouseID === '') return null;
+      return byId[spouseID] || null;
     }
 
     function getSpouseName(spouseID) {
-      if (!spouseID) return '';
-      let spouse = byId[spouseID];
-      return spouse ? spouse.Name : '';
+      const s = getSpouse(spouseID);
+      return s ? s.Name : '';
     }
 
     function getChildren(parentId) {
       return people.filter(person =>
         String(person.FatherID) === String(parentId) ||
-        String(person.MotherID) === String(parentId));
+        String(person.MotherID) === String(parentId)
+      );
     }
 
-function renderPerson(personId, container) {
-  const person = byId[personId];
-  if (!person) return;
+    // Format date to MMM DD
+    function formatDOB(dobString) {
+      if (!dobString || dobString === '') return '';
+      const date = new Date(dobString);
+      if (isNaN(date.getTime())) return '';
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const month = months[date.getMonth()];
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${month} ${day}`;
+    }
 
-  const spouseName = getSpouseName(person.SpouseID);
-  const children = getChildren(personId);
+    function renderPerson(personId, container) {
+      const person = byId[personId];
+      if (!person) return;
 
-  const wrapperDiv = document.createElement("div");
-  const personDiv = document.createElement("div");
-  personDiv.className = "person";
-  personDiv.dataset.personId = personId;
-  if (children.length) {
-    personDiv.classList.add("toggleable");
-  }
+      const spouse = getSpouse(person.SpouseID);
+      const spouseName = spouse ? spouse.Name : '';
+      const children = getChildren(personId);
 
-  // Descendants toggle icon
-  let toggleIcon = null;
-  if (children.length > 0) {
-    toggleIcon = document.createElement("span");
-    toggleIcon.className = "descendent-toggle";
-    toggleIcon.innerText = "▶";
-    personDiv.appendChild(toggleIcon);
-  }
+      const personDOB = formatDOB(person.DOB);
+      const spouseDOB = spouse ? formatDOB(spouse.DOB) : '';
 
-  // --- Begin alternating photo code ---
-  const photo = document.createElement("img");
-  photo.className = "photo";
-  const mainPhotoUrl = `https://gvssmark.github.io/FamTree/omkarphotos/${person.PersonID}.PNG`;
-  const spousePhotoUrl = person.SpouseID
-    ? `https://gvssmark.github.io/FamTree/omkarphotos/${person.SpouseID}.PNG`
-    : null;
-  photo.src = mainPhotoUrl;
-  photo.alt = person.Name;
-  photo.onerror = function() { this.src = "https://gvssmark.github.io/FamTree/omkarphotos/omkar.PNG"; };
-  let showingPerson = true;
-  let photoTimer = null;
-  if (spousePhotoUrl) {
-    photo.src = mainPhotoUrl;
-    photo.alt = person.Name + " / " + spouseName;
-    photoTimer = setInterval(() => {
-      showingPerson = !showingPerson;
-      photo.src = showingPerson ? mainPhotoUrl : spousePhotoUrl;
-      photo.alt = showingPerson ? person.Name : spouseName;
-    }, 3000);
-    // Optional: Clean up when node is removed (not required unless you dynamically destroy nodes)
-  }
-  personDiv.appendChild(photo);
-  // --- End photo alternating code ---
+      const wrapperDiv = document.createElement("div");
+      const personDiv = document.createElement("div");
+      personDiv.className = "person";
+      personDiv.dataset.personId = personId;
+      if (children.length) {
+        personDiv.classList.add("toggleable");
+      }
 
-  // Details
-  const detailsDiv = document.createElement("div");
-  detailsDiv.className = "details";
-  detailsDiv.innerHTML = `<div><strong>${person.Name}</strong></div>`;
-  if (spouseName) {
-    detailsDiv.innerHTML += `<div class="spouse-name">Spouse: ${spouseName}</div>`;
-  }
-  personDiv.appendChild(detailsDiv);
+      let toggleIcon = null;
+      if (children.length > 0) {
+        toggleIcon = document.createElement("span");
+        toggleIcon.className = "descendent-toggle";
+        toggleIcon.innerText = "▶";
+        personDiv.appendChild(toggleIcon);
+      }
 
-  wrapperDiv.appendChild(personDiv);
+      // Photo + alternating spouse photo
+      const photo = document.createElement("img");
+      photo.className = "photo";
+      const mainPhotoUrl = `https://gvssmark.github.io/FamTree/omkarphotos/${person.PersonID}.PNG`;
+      const spousePhotoUrl = spouse
+        ? `https://gvssmark.github.io/FamTree/omkarphotos/${spouse.PersonID}.PNG`
+        : null;
 
-  // Children container
-  const childrenDiv = document.createElement("div");
-  childrenDiv.className = "children";
-  children.forEach(child => {
-    renderPerson(child.PersonID, childrenDiv);
-  });
-  wrapperDiv.appendChild(childrenDiv);
+      photo.src = mainPhotoUrl;
+      photo.alt = person.Name;
+      photo.onerror = function() {
+        this.src = "https://gvssmark.github.io/FamTree/omkarphotos/omkar.PNG";
+      };
 
-  // Click to toggle children — only for parents
-  if (children.length > 0) {
-    personDiv.addEventListener("click", function(e) {
-      e.stopPropagation();
-      wrapperDiv.classList.toggle("expanded");
-      toggleIcon.innerText = wrapperDiv.classList.contains("expanded") ? "▼" : "▶";
-    });
-  }
-  container.appendChild(wrapperDiv);
-}
+      let showingPerson = true;
+      if (spousePhotoUrl) {
+        photo.alt = person.Name + " / " + spouseName;
+        setInterval(() => {
+          showingPerson = !showingPerson;
+          photo.src = showingPerson ? mainPhotoUrl : spousePhotoUrl;
+          photo.alt = showingPerson ? person.Name : spouseName;
+        }, 3000);
+      }
+      personDiv.appendChild(photo);
 
+      // Details: name + both DOBs on same line, spouse line below
+      const detailsDiv = document.createElement("div");
+      detailsDiv.className = "details";
+
+      let nameLineHtml = `<span class="name-line"><strong>${person.Name} </strong> <span class="dob-inline"> ${personDOB? personDOB: ""}</span>`;
+     
+      if (spouseName) {
+       detailsDiv.innerHTML += `<div class="spouse-name">Spouse: ${spouseName}</div>`;
+       // nameLineHtml += `, <span>${spouseName}</span>`;
+        if (spouseDOB) {
+         // nameLineHtml += `<span class="dob-inline">DOB: ${spouseDOB}</span>`;
+        }
+      }
+      nameLineHtml += `</span>`;
+
+      detailsDiv.innerHTML = nameLineHtml;
+
+      if (spouseName) {
+        detailsDiv.innerHTML += `<div class="spouse-name">Spouse: ${spouseName} <span class="dob-inline"> ${spouseDOB ? spouseDOB : ""} </span>  </div>`;
+        
+      }
+
+      personDiv.appendChild(detailsDiv);
+      wrapperDiv.appendChild(personDiv);
+
+      const childrenDiv = document.createElement("div");
+      childrenDiv.className = "children";
+      children.forEach(child => {
+        renderPerson(child.PersonID, childrenDiv);
+      });
+      wrapperDiv.appendChild(childrenDiv);
+
+      if (children.length > 0) {
+        personDiv.addEventListener("click", function(e) {
+          e.stopPropagation();
+          wrapperDiv.classList.toggle("expanded");
+          toggleIcon.innerText = wrapperDiv.classList.contains("expanded") ? "▼" : "▶";
+        });
+      }
+
+      container.appendChild(wrapperDiv);
+    }
 
     function renderTree() {
       initData();
       const root = document.getElementById('tree-root');
       root.innerHTML = '';
-      renderPerson(1, root); // ID 1
+      renderPerson(1, root);
     }
 
     if (typeof omkardata !== "undefined") {
       renderTree();
     } else {
       window.addEventListener('load', () => {
-        if (typeof omkardata !== "undefined") renderTree();
+        if (typeof omkardata !== "undefined") {
+          renderTree();
+        }
       });
     }
   </script>
