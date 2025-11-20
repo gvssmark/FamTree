@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +8,7 @@
   <style>
     body { font-family: Arial, sans-serif; }
     .person { margin: 10px; cursor: pointer; display: flex; align-items: center; }
-    .photo { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid #bbb; }
+    .photo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid #bbb; }
     .details { display: flex; flex-direction: column; }
     .children { margin-left: 20px; display: none; border-left: 2px dotted #aaa; padding-left: 10px; }
     .person .descendent-toggle { margin-left: 10px; font-size: 1em; }
@@ -51,73 +52,85 @@
         String(person.MotherID) === String(parentId));
     }
 
-    function renderPerson(personId, container) {
-      const person = byId[personId];
-      if (!person) return;
+function renderPerson(personId, container) {
+  const person = byId[personId];
+  if (!person) return;
 
-      const spouseName = getSpouseName(person.SpouseID);
-      const children = getChildren(personId);
+  const spouseName = getSpouseName(person.SpouseID);
+  const children = getChildren(personId);
 
-      const wrapperDiv = document.createElement("div");
+  const wrapperDiv = document.createElement("div");
+  const personDiv = document.createElement("div");
+  personDiv.className = "person";
+  personDiv.dataset.personId = personId;
+  if (children.length) {
+    personDiv.classList.add("toggleable");
+  }
 
-      const personDiv = document.createElement("div");
-      personDiv.className = "person";
-      personDiv.dataset.personId = personId;
+  // Descendants toggle icon
+  let toggleIcon = null;
+  if (children.length > 0) {
+    toggleIcon = document.createElement("span");
+    toggleIcon.className = "descendent-toggle";
+    toggleIcon.innerText = "▶";
+    personDiv.appendChild(toggleIcon);
+  }
 
-      if (children.length) {
-        personDiv.classList.add("toggleable");
-      }
+  // --- Begin alternating photo code ---
+  const photo = document.createElement("img");
+  photo.className = "photo";
+  const mainPhotoUrl = `https://gvssmark.github.io/FamTree/omkarphotos/${person.PersonID}.PNG`;
+  const spousePhotoUrl = person.SpouseID
+    ? `https://gvssmark.github.io/FamTree/omkarphotos/${person.SpouseID}.PNG`
+    : null;
+  photo.src = mainPhotoUrl;
+  photo.alt = person.Name;
+  photo.onerror = function() { this.src = "https://gvssmark.github.io/FamTree/omkarphotos/omkar.PNG"; };
+  let showingPerson = true;
+  let photoTimer = null;
+  if (spousePhotoUrl) {
+    photo.src = mainPhotoUrl;
+    photo.alt = person.Name + " / " + spouseName;
+    photoTimer = setInterval(() => {
+      showingPerson = !showingPerson;
+      photo.src = showingPerson ? mainPhotoUrl : spousePhotoUrl;
+      photo.alt = showingPerson ? person.Name : spouseName;
+    }, 3000);
+    // Optional: Clean up when node is removed (not required unless you dynamically destroy nodes)
+  }
+  personDiv.appendChild(photo);
+  // --- End photo alternating code ---
 
-      // Descendants toggle icon
-      let toggleIcon = null;
-      if (children.length > 0) {
-        toggleIcon = document.createElement("span");
-        toggleIcon.className = "descendent-toggle";
-        toggleIcon.innerText = "▶";
-        personDiv.appendChild(toggleIcon);
-      }
+  // Details
+  const detailsDiv = document.createElement("div");
+  detailsDiv.className = "details";
+  detailsDiv.innerHTML = `<div><strong>${person.Name}</strong></div>`;
+  if (spouseName) {
+    detailsDiv.innerHTML += `<div class="spouse-name">Spouse: ${spouseName}</div>`;
+  }
+  personDiv.appendChild(detailsDiv);
 
-      // Photo
-      const photo = document.createElement("img");
-      photo.className = "photo";
-      photo.src = `https://gvssmark.github.io/FamTree/photos/${person.PersonID}.jpeg`;
-      photo.alt = person.Name;
-      photo.onerror = function() { this.src = "https://gvssmark.github.io/FamTree/omkarphotos/omkar.PNG"; };
-      personDiv.appendChild(photo);
+  wrapperDiv.appendChild(personDiv);
 
-      // Details
-      const detailsDiv = document.createElement("div");
-      detailsDiv.className = "details";
-      detailsDiv.innerHTML = `<div><strong>${person.Name}</strong></div>`;
-      if (spouseName) {
-        detailsDiv.innerHTML += `<div class="spouse-name">Spouse: ${spouseName}</div>`;
-      }
-      personDiv.appendChild(detailsDiv);
+  // Children container
+  const childrenDiv = document.createElement("div");
+  childrenDiv.className = "children";
+  children.forEach(child => {
+    renderPerson(child.PersonID, childrenDiv);
+  });
+  wrapperDiv.appendChild(childrenDiv);
 
-      wrapperDiv.appendChild(personDiv);
+  // Click to toggle children — only for parents
+  if (children.length > 0) {
+    personDiv.addEventListener("click", function(e) {
+      e.stopPropagation();
+      wrapperDiv.classList.toggle("expanded");
+      toggleIcon.innerText = wrapperDiv.classList.contains("expanded") ? "▼" : "▶";
+    });
+  }
+  container.appendChild(wrapperDiv);
+}
 
-      // Children container
-      const childrenDiv = document.createElement("div");
-      childrenDiv.className = "children";
-
-      children.forEach(child => {
-        renderPerson(child.PersonID, childrenDiv);
-      });
-
-      wrapperDiv.appendChild(childrenDiv);
-
-      // Click to toggle children — only for parents
-      if (children.length > 0) {
-        personDiv.addEventListener("click", function(e) {
-          e.stopPropagation();
-          wrapperDiv.classList.toggle("expanded");
-          // Animate/rotate toggle icon
-          toggleIcon.innerText = wrapperDiv.classList.contains("expanded") ? "▼" : "▶";
-        });
-      }
-
-      container.appendChild(wrapperDiv);
-    }
 
     function renderTree() {
       initData();
