@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Achanta Family Tree</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .person { margin: 10px; cursor: pointer; display: flex; align-items: center; }
+    .photo { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 2px solid #bbb; }
+    .details { display: flex; flex-direction: column; }
+    .children { margin-left: 20px; display: none; border-left: 2px dotted #aaa; padding-left: 10px; }
+    .person .descendent-toggle { margin-left: 10px; font-size: 1em; }
+    .expanded > .children { display: block; }
+    .person.toggleable:hover { background: #f0f8ff; }
+    .spouse-name {color:red; font-size: .9em}
+  </style>
+</head>
+<body>
+  <h3>Achanta Venkata Suryanarayana Rao</h3>
+  <div id="tree-root"></div>
+
+  <script src="https://gvssmark.github.io/FamTree/omkardata.json"></script>
+  <script>
+    function arrayToObjects(dataArr) {
+      const keys = dataArr[0];
+      return dataArr.slice(1).map(row => {
+        let obj = {};
+        keys.forEach((k, idx) => { obj[k.replace(' ', '').replace('\n','')] = row[idx]; });
+        return obj;
+      });
+    }
+
+    let people;
+    let byId = {};
+
+    function initData() {
+      people = arrayToObjects(omkardata);
+      people.forEach(person => { byId[person.PersonID] = person; });
+    }
+
+    function getSpouseName(spouseID) {
+      if (!spouseID) return '';
+      let spouse = byId[spouseID];
+      return spouse ? spouse.Name : '';
+    }
+
+    function getChildren(parentId) {
+      return people.filter(person =>
+        String(person.FatherID) === String(parentId) ||
+        String(person.MotherID) === String(parentId));
+    }
+
+    function renderPerson(personId, container) {
+      const person = byId[personId];
+      if (!person) return;
+
+      const spouseName = getSpouseName(person.SpouseID);
+      const children = getChildren(personId);
+
+      const wrapperDiv = document.createElement("div");
+
+      const personDiv = document.createElement("div");
+      personDiv.className = "person";
+      personDiv.dataset.personId = personId;
+
+      if (children.length) {
+        personDiv.classList.add("toggleable");
+      }
+
+      // Descendants toggle icon
+      let toggleIcon = null;
+      if (children.length > 0) {
+        toggleIcon = document.createElement("span");
+        toggleIcon.className = "descendent-toggle";
+        toggleIcon.innerText = "▶";
+        personDiv.appendChild(toggleIcon);
+      }
+
+      // Photo
+      const photo = document.createElement("img");
+      photo.className = "photo";
+      photo.src = `https://gvssmark.github.io/FamTree/photos/${person.PersonID}.jpeg`;
+      photo.alt = person.Name;
+      photo.onerror = function() { this.src = "https://gvssmark.github.io/FamTree/omkarphotos/omkar.PNG"; };
+      personDiv.appendChild(photo);
+
+      // Details
+      const detailsDiv = document.createElement("div");
+      detailsDiv.className = "details";
+      detailsDiv.innerHTML = `<div><strong>${person.Name}</strong></div>`;
+      if (spouseName) {
+        detailsDiv.innerHTML += `<div class="spouse-name">Spouse: ${spouseName}</div>`;
+      }
+      personDiv.appendChild(detailsDiv);
+
+      wrapperDiv.appendChild(personDiv);
+
+      // Children container
+      const childrenDiv = document.createElement("div");
+      childrenDiv.className = "children";
+
+      children.forEach(child => {
+        renderPerson(child.PersonID, childrenDiv);
+      });
+
+      wrapperDiv.appendChild(childrenDiv);
+
+      // Click to toggle children — only for parents
+      if (children.length > 0) {
+        personDiv.addEventListener("click", function(e) {
+          e.stopPropagation();
+          wrapperDiv.classList.toggle("expanded");
+          // Animate/rotate toggle icon
+          toggleIcon.innerText = wrapperDiv.classList.contains("expanded") ? "▼" : "▶";
+        });
+      }
+
+      container.appendChild(wrapperDiv);
+    }
+
+    function renderTree() {
+      initData();
+      const root = document.getElementById('tree-root');
+      root.innerHTML = '';
+      renderPerson(1, root); // ID 1
+    }
+
+    if (typeof omkardata !== "undefined") {
+      renderTree();
+    } else {
+      window.addEventListener('load', () => {
+        if (typeof omkardata !== "undefined") renderTree();
+      });
+    }
+  </script>
+</body>
+</html>
