@@ -2,65 +2,27 @@
 <html>
 <head>
 <meta charset="UTF-8">
-     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Family Tree - ID 1</title>
 <script src="https://gvssmark.github.io/FamTree/omkardata.json"></script>
 <style>
     body { font-family: Arial; font-size:small; }
     .tree-container { padding: 10px; }
-
-    .node {
-        display: flex;              /* photo + text side by side */
-        flex-direction: row;
-        align-items: center;        /* vertical alignment */
-        justify-content: flex-start;
-        padding: 10px;
-        border: 1px solid #444;
-        border-radius: 10px;
-        cursor: pointer;
-        margin: 6px;
-        text-align: left;
-        transition: 0.2s;
-        min-width: 220px;
-    }
-
-    .children {
-        margin-left: 10px;
-        border-left: 1px solid #bbb;
-        padding-left: 10px;
-        display: none;
-    }
-
+    .node {display: flex;flex-direction: row;align-items: center;justify-content: flex-start;padding: 10px;border: 1px solid #444;border-radius: 10px;cursor: pointer;margin: 6px;text-align: left;transition: 0.2s;min-width: 220px;}
+    .children {margin-left: 10px;border-left: 1px solid #bbb;padding-left: 10px;display: none;}
     .visible { display: block !important; }
-
-    .photo {
-        width: 80px;
-        height: 80px;
-        object-fit: cover;
-        border-radius: 50%;
-        margin-right: 10px;
-    }
-
-    .text {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
+    .photo {width: 80px;height: 80px;object-fit: cover;border-radius: 50%;margin-right: 10px;}
+    .text {display: flex;flex-direction: column;justify-content: center;}
     h3 {text-align:center; color:red;}
 </style>
-
 </head>
 <body>
-
 <h3>Achanta Venkata Suryanarayana Rao<br>(Born: 18-12-1925)</h3>
 <div id="tree" class="tree-container"></div>
-
 <script>
 // ------------------ Input Data ------------------
 const raw = omkardata
 // ------------------------------------------------
-
 const data = raw.slice(1).map(r => ({
     id: Number(r[0]),
     name: r[1],
@@ -71,65 +33,49 @@ const data = raw.slice(1).map(r => ({
     dob: r[6],
     telugu: r[7]
 }));
-
 const persons = {};
 data.forEach(p => { persons[p.id] = { ...p, children: [] }; });
-
 data.forEach(p => {
     if (p.father && persons[p.father]) persons[p.father].children.push(p.id);
     if (p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
 });
-
 const genColors = ["#cce6ff","#d5f5d5","#fff4b3","#ffd6e7","#e0e0e0"];
-
 function formatDOB(dob) {
     if (!dob) return "";
     const date = new Date(dob);
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
-
 function buildNode(person, level) {
     const wrap = document.createElement("div");
-
     const node = document.createElement("div");
     node.className = "node";
     node.style.background = genColors[level] || "#f7f7f7";
-
     // Photo
     const photo = document.createElement("img");
     photo.className = "photo";
     photo.src = `https://gvssmark.github.io/FamTree/omkarphotos/${person.id}.PNG`;
     photo.onerror = () => { photo.style.display = "none"; };
-
     // Spouse photo (for alternation)
     let spousePhoto = null;
     if (person.spouse && persons[person.spouse]) {
         spousePhoto = `https://gvssmark.github.io/FamTree/omkarphotos/${person.spouse}.PNG`;
     }
-
     // Text block
     const textDiv = document.createElement("div");
     textDiv.className = "text";
-
-//    let nameLine = `<b>${person.name}</b>  `;
-//    if (person.dob) nameLine += ` (${formatDOB(person.dob)})`;
-
 let nameLine = `<b>${person.name}`;
 if (person.dob) nameLine += ` (${formatDOB(person.dob)})`;
 nameLine += `</b>`
     let spouseLine = "";
     if (person.spouse && persons[person.spouse]) {
         const sp = persons[person.spouse];
-        spouseLine = `<span style='font-size:12px;color:#666'>Spouse: ${sp.name}`;
+        spouseLine = `<span style='font-size:12px;color:blue'; >Spouse: ${sp.name}`;
         if (sp.dob) spouseLine += ` (${formatDOB(sp.dob)})`;
         spouseLine += `</span>`;
     }
-
-    textDiv.innerHTML = `${nameLine}<br>${spouseLine}`;
-
+    textDiv.innerHTML = `${nameLine}${spouseLine}`;
     node.appendChild(photo);
     node.appendChild(textDiv);
-
     // Alternate photo every 3 seconds
     if (spousePhoto) {
         let showingSpouse = false;
@@ -140,25 +86,18 @@ nameLine += `</b>`
             showingSpouse = !showingSpouse;
         }, 3000);
     }
-
     const kids = document.createElement("div");
     kids.className = "children";
-
     node.onclick = () => kids.classList.toggle("visible");
-
     person.children.forEach(cid => {
         kids.appendChild(buildNode(persons[cid], level + 1));
     });
-
     wrap.appendChild(node);
     if (person.children.length > 0) wrap.appendChild(kids);
-
     return wrap;
 }
-
 const root = persons[1];
 document.getElementById("tree").appendChild(buildNode(root, 0));
 </script>
-
 </body>
 </html>
