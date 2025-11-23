@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Family Tree</title>
+<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
+<style>
+    body { font-family: Arial; font-size:small; }
+    .tree-container { padding: 10px; }
+    .node {display: flex;flex-direction: row;align-items: center;justify-content: flex-start;padding: 10px;border: 1px solid #444;border-radius: 10px;cursor: pointer;margin: 6px;text-align: left;transition: 0.2s;min-width: 220px;}
+    .children {margin-left: 10px;border-left: 1px solid #bbb;padding-left: 10px;display: none;}
+    .visible { display: block !important; }
+    .photo {width: 80px;height: 80px;object-fit: cover;border-radius: 50%;margin-right: 10px; border:1px solid black;}
+    .text {display: flex;flex-direction: column;justify-content: center;}
+    h3 {text-align:center; color:red;}
+</style>
+</head>
+<body>
+<h3>Family Tree of <br>Goteti Bapiraju</h3>
+<div id="tree" class="tree-container"></div>
+<script>
+// ------------------ Input Data ------------------
+const raw = gvss
+// ------------------------------------------------
+const data = raw.slice(1).map(r => ({
+    id: Number(r[0]),
+    name: r[1],
+    gender: r[2],
+    father: r[3] === "" ? null : Number(r[3]),
+    mother: r[4] === "" ? null : Number(r[4]),
+    spouse: r[5] === "" ? null : Number(r[5]),
+    dob: r[6],
+    telugu: r[7]
+}));
+const persons = {};
+data.forEach(p => { persons[p.id] = { ...p, children: [] }; });
+data.forEach(p => {
+    if (p.father && persons[p.father]) persons[p.father].children.push(p.id);
+    if (p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
+});
+
+//add more colors
+const genColors = ["#cce6ff","#d5f5d5","#fff4b3","#ffd6e7","#e0e0e0", "#C9901D", "#56C91D", "#ACC91D"];
+function formatDOB(dob) {
+    if (!dob) return "";
+    const date = new Date(dob);
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+function buildNode(person, level) {
+    const wrap = document.createElement("div");
+    const node = document.createElement("div");
+    node.className = "node";
+    node.style.background = genColors[level] || "#f7f7f7";
+    // Photo
+    const photo = document.createElement("img");
+    photo.className = "photo";
+    photo.src = `https://gvssmark.github.io/FamTree/photos/${person.id}.JPG`;
+    photo.onerror = () => { photo.style.display = "none"; };
+    // Spouse photo (for alternation)
+    let spousePhoto = null;
+    if (person.spouse && persons[person.spouse]) {
+        spousePhoto = `https://gvssmark.github.io/FamTree/photos/${person.spouse}.JPG`;
+    }
+    // Text block
+    const textDiv = document.createElement("div");
+    textDiv.className = "text";
+let nameLine = `<b>${person.name}`;
+if (person.dob) nameLine += ` (${formatDOB(person.dob)})`;
+nameLine += `</b>`
+    let spouseLine = "";
+    if (person.spouse && persons[person.spouse]) {
+        const sp = persons[person.spouse];
+        spouseLine = `<span style='font-size:12px;color:blue'; >Spouse: ${sp.name}`;
+        if (sp.dob) spouseLine += ` (${formatDOB(sp.dob)})`;
+        spouseLine += `</span>`;
+    }
+    textDiv.innerHTML = `${nameLine}${spouseLine}`;
+    node.appendChild(photo);
+    node.appendChild(textDiv);
+    // Alternate photo every 3 seconds
+    if (spousePhoto) {
+        let showingSpouse = false;
+        setInterval(() => {
+            photo.src = showingSpouse
+                ? `https://gvssmark.github.io/FamTree/photos/${person.id}.JPG`
+                : spousePhoto;
+            showingSpouse = !showingSpouse;
+        }, 3000);
+    }
+    const kids = document.createElement("div");
+    kids.className = "children";
+    node.onclick = () => kids.classList.toggle("visible");
+    person.children.forEach(cid => {
+        kids.appendChild(buildNode(persons[cid], level + 1));
+    });
+    wrap.appendChild(node);
+    if (person.children.length > 0) wrap.appendChild(kids);
+    return wrap;
+}
+const root = persons[401];
+document.getElementById("tree").appendChild(buildNode(root, 0));
+</script>
+</body>
+</html>
