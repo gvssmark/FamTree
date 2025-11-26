@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -90,6 +91,11 @@ function buildNode(person, level) {
     photo.src = `https://gvssmark.github.io/FamTree/photos/${person.id}.JPG`;
     photo.onerror = () => { photo.style.display = "none"; };
 
+ let spousePhoto = null;
+    if (person.spouse && persons[person.spouse]) {
+        spousePhoto = `https://gvssmark.github.io/FamTree/photos/${person.spouse}.JPG`;
+    }
+    
     const textDiv = document.createElement("div");
     textDiv.className = "text";
     let nameLine = `<b>${person.name}`;
@@ -106,6 +112,16 @@ function buildNode(person, level) {
 
     node.appendChild(photo);
     node.appendChild(textDiv);
+    
+    if (spousePhoto) {
+        let showingSpouse = false;
+        setInterval(() => {
+            photo.src = showingSpouse
+                ? `https://gvssmark.github.io/FamTree/photos/${person.id}.JPG`
+                : spousePhoto;
+            showingSpouse = !showingSpouse;
+        }, 3000);
+    }
 
     const kids = document.createElement("div");
     kids.className = "children";
