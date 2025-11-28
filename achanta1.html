@@ -54,7 +54,7 @@ function buildNode(person, level) {
     const photo = document.createElement("img");
     photo.className = "photo";
     photo.src = `https://gvssmark.github.io/FamTree/omkarphotos/${person.id}.PNG`;
-    photo.onerror = () => { photo.style.display = "none"; };
+    photo.onerror = () => {photo.src ='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true' };
     // Spouse photo (for alternation)
     let spousePhoto = null;
     if (person.spouse && persons[person.spouse]) {
