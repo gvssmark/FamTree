@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Family Tree — Lazy Preload</title>
+<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
+<style>
+    body { font-family: Arial; font-size:small; margin:0; }
+    .tree-container { padding: 10px; }
+    .node {
+        display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
+        padding: 5px; border: 1px solid #444; border-radius: 10px;
+        cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;
+    }
+    .children { margin-left: 2px; border-left: 1px solid #bbb; padding-left: 10px; display: block; }
+    .visible { display: block !important; }
+    .photo { width: 34px; height: 34px; object-fit: cover; border-radius: 50%; margin-right: 10px; border:1px solid black; background:#fff; }
+    .text { display: flex; flex-direction: column; justify-content: center; }
+    .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+    .surname { cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px; margin:3px; text-align:center; background:#f7f7f7; }
+    .member { cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px; margin:3px; background:#f7f7f7; }
+    .topbar {
+        position:fixed; top:0; left:0; right:0;
+        background:#eee; padding:10px; border-bottom:1px solid #444;
+        text-align:center; z-index:1000;
+        display:flex; flex-direction:column; align-items:center; gap:6px;
+    }
+    .title { margin:0; font-weight:bold; color:#d00; }
+    .buttons { display:flex; gap:8px; flex-wrap:wrap; }
+    .buttons button { margin:0; padding:6px 12px; }
+    .content { margin-top:90px; }
+</style>
+</head>
+<body>
+<div class="topbar">
+    <div class="title" id="title">Family Tree</div>
+    <div class="buttons">
+        <button id="paternalBtn" disabled>Paternal</button>
+        <button id="maternalBtn" disabled>Maternal</button>
+        <button id="homeBtn">Home</button>
+    </div>
+</div>
+
+<div id="screen1" class="two-columns content"></div>
+<div id="screen2" class="content" style="display:none;"></div>
+<div id="screen3" class="content" style="display:none;"></div>
+<div id="tree" class="tree-container content" style="display:none;"></div>
+
+<script>
+// -------------------- Data --------------------
+const raw = gvss;
+const data = raw.slice(1).map(r => ({
+    id: Number(r[0]),
+    name: r[1],
+    gender: r[2],
+    father: r[3] === "" ? null : Number(r[3]),
+    mother: r[4] === "" ? null : Number(r[4]),
+    spouse: r[5] === "" ? null : Number(r[5]),
+    dob: r[6],
+    telugu: r[7]
+}));
+const persons = {};
+data.forEach(p => { persons[p.id] = { ...p, children: [] }; });
+data.forEach(p => {
+    if (p.father && persons[p.father]) persons[p.father].children.push(p.id);
+    if (p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
+});
+
+// ---------------- Image Cache (Lazy Preload) ----------------
+const basePhotoUrl = id => `https://gvssmark.github.io/FamTree/photos/${id}.JPG`;
+const noImageUrl = 'https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true';
+
+// imgCache[id] = { status: 'loading'|'loaded'|'error', img: Image, promises: [PromiseResolve...] }
+const imgCache = {};
+
+// Preload the single noimage placeholder immediately
+(function preloadNoImage(){
+    const img = new Image();
+    img.src = noImageUrl;
+    imgCache['noimage'] = { status: 'loaded', img };
+})();
+
+function loadImageById(id) {
+    // returns Promise that resolves to an Image object (or the placeholder on error)
+    if (!id) return Promise.resolve(imgCache['noimage'].img);
+    const key = String(id);
+    if (imgCache[key]) {
+        if (imgCache[key].status === 'loaded') return Promise.resolve(imgCache[key].img);
+        if (imgCache[key].status === 'loading') {
+            // return existing promise
+            return imgCache[key].promise;
+        }
+        if (imgCache[key].status === 'error') return Promise.resolve(imgCache['noimage'].img);
+    }
+
+    // start loading
+    const img = new Image();
+    const p = new Promise((resolve) => {
+        img.onload = () => {
+            imgCache[key].status = 'loaded';
+            imgCache[key].img = img;
+            resolve(img);
+        };
+        img.onerror = () => {
+            imgCache[key].status = 'error';
+            imgCache[key].img = imgCache['noimage'].img;
+            resolve(imgCache['noimage'].img);
+        };
+    });
+    imgCache[key] = { status: 'loading', img: null, promise: p };
+    // Kick off loading by setting src
+    img.src = basePhotoUrl(id);
+    imgCache[key].imgObject = img; // keep ref while loading
+    imgCache[key].promise = p;
+    return p;
+}
+
+// Preload small batch of ids (used when showing members/surnames)
+function preloadIdsArray(ids) {
+    ids.forEach(id => loadImageById(id).catch(()=>{}));
+}
+
+// -------------------- Utils --------------------
+let selectedPersonId = null;
+let currentPersonId = null;
+const genColors = ["#cce6ff","#d5f5d5","#fff4b3","#ffd6e7","#e0e0e0", "#C9901D", "#56C91D", "#ACC91D"];
+function formatDOB(dob) {
+    if (!dob) return "";
+    const date = new Date(dob);
+    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+// -------------------- Build Node (uses cache) --------------------
+function buildNode(person, level) {
+    const wrap = document.createElement("div");
+    const node = document.createElement("div");
+    node.className = "node";
+    node.style.background = genColors[level] || "#f7f7f7";
+
+    if (person.id === selectedPersonId) {
+        node.style.border = "3px solid red";
+        node.style.backgroundColor = "#ffdddd";
+        node.style.boxShadow = "0 0 10px red";
+    }
+
+    // photo element
+    const photo = document.createElement("img");
+    photo.className = "photo";
+    // set placeholder first
+    photo.src = imgCache['noimage'] ? imgCache['noimage'].img.src : noImageUrl;
+
+    // ensure person image is loading or loaded; then update photo.src when ready
+    loadImageById(person.id).then(img => {
+        // Only update if element still in DOM
+        if (photo) photo.src = img.src;
+    });
+
+    // click photo => load person's paternal tree
+    photo.onclick = (e) => {
+        e.stopPropagation();
+        selectedPersonId = person.id;
+        currentPersonId = person.id;
+        showRootAncestor(person.id, "father");
+    };
+
+    // text (name + spouse)
+    const textDiv = document.createElement("div");
+    textDiv.className = "text";
+
+    let nameLine = `<b>${person.name}`;
+    if (person.dob) nameLine += ` (${formatDOB(person.dob)})`;
+    nameLine += `</b>`;
+
+    // spouse clickable name
+    let spouseLine = "";
+    if (person.spouse && persons[person.spouse]) {
+        const sp = persons[person.spouse];
+        spouseLine =
+          `<span style='font-size:12px;color:blue;cursor:pointer;text-decoration:underline'
+                 onclick='event.stopPropagation(); selectedPersonId=${sp.id}; currentPersonId=${sp.id}; showRootAncestor(${sp.id},"father");'
+           >${sp.name}`;
+        if (sp.dob) spouseLine += ` (${formatDOB(sp.dob)})`;
+        spouseLine += `</span>`;
+    }
+
+    textDiv.innerHTML = `${nameLine}${spouseLine}`;
+    node.appendChild(photo);
+    node.appendChild(textDiv);
+
+    // spouse photo handling: preload spouse too, and toggle between cached srcs (no refetch)
+    if (person.spouse && persons[person.spouse]) {
+        // Ensure spouse image starts loading
+        loadImageById(person.spouse).then(()=>{ /* nothing here */ });
+
+        // toggle but use cached images only
+        let showingSpouse = false;
+        // Use interval id to allow clearing if needed (not strictly necessary here)
+        const intervalId = setInterval(() => {
+            const selfCached = imgCache[String(person.id)] && imgCache[String(person.id)].status === 'loaded' ? imgCache[String(person.id)].img.src : (imgCache['noimage'].img.src);
+            const spCached = imgCache[String(person.spouse)] && imgCache[String(person.spouse)].status === 'loaded' ? imgCache[String(person.spouse)].img.src : (imgCache['noimage'].img.src);
+            photo.src = showingSpouse ? selfCached : spCached;
+            showingSpouse = !showingSpouse;
+        }, 3000);
+
+        // attach interval id so we can clear later if node removed (good hygiene)
+        wrap.dataset.intervalId = intervalId;
+
+        // Make clicking photo when spouse shown switch to spouse's tree
+        photo.onclick = (e) => {
+            e.stopPropagation();
+            // select the currently shown image's owner
+            const ownerId = showingSpouse ? person.spouse : person.id;
+            selectedPersonId = ownerId;
+            currentPersonId = ownerId;
+            showRootAncestor(ownerId, "father");
+        };
+    }
+
+    // node click => load that person's paternal tree
+    node.onclick = (e) => {
+        e.stopPropagation();
+        selectedPersonId = person.id;
+        currentPersonId = person.id;
+        showRootAncestor(person.id, "father");
+    };
+
+    // children
+    const kids = document.createElement("div");
+    kids.className = "children";
+
+    person.children.forEach(cid => {
+        kids.appendChild(buildNode(persons[cid], level + 1));
+    });
+
+    wrap.appendChild(node);
+    if (person.children.length > 0) wrap.appendChild(kids);
+
+    return wrap;
+}
+
+// tidy intervals when clearing tree
+function clearTreeIntervals(container) {
+    // find all nodes with dataset.intervalId
+    const elems = container.querySelectorAll('[data-interval-id]');
+    // try both dataset forms
+    container.querySelectorAll('*').forEach(el => {
+        const iid = el.dataset.intervalId || el.dataset.intervalid;
+        if (iid) clearInterval(Number(iid));
+    });
+}
+
+// -------------------- UI Screens --------------------
+const screen1 = document.getElementById("screen1");
+const screen2 = document.getElementById("screen2");
+const screen3 = document.getElementById("screen3");
+const treeDiv = document.getElementById("tree");
+
+// build surname list and preload members of surname when clicked
+const surnames = [...new Set(data.map(p => p.name.split(" ")[0]))].sort((a,b) => a.localeCompare(b));
+surnames.forEach(sn => {
+    const d = document.createElement("div");
+    d.className = "surname";
+    d.textContent = sn;
+    d.onclick = () => showMembers(sn);
+    screen1.appendChild(d);
+});
+
+function showMembers(surname) {
+    setTitle(`Members of ${surname}`);
+    screen1.style.display = "none";
+    screen2.innerHTML = "";
+    screen2.style.display = "block";
+
+    const members = data.filter(p => p.name.startsWith(surname)).sort((a,b) => a.name.localeCompare(b.name));
+    // preload the member thumbnails (small batch)
+    const idsToPreload = members.map(m => m.id);
+    preloadIdsArray(idsToPreload);
+
+    members.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "member";
+        div.textContent = p.name;
+        div.onclick = () => showMemberOptions(p.id);
+        screen2.appendChild(div);
+    });
+
+    setButtonsEnabled(false);
+    treeDiv.style.display = "none";
+    screen3.style.display = "none";
+    window.scrollTo(0,0);
+}
+
+function showMemberOptions(id) {
+    currentPersonId = id;
+    selectedPersonId = id;
+    setButtonsEnabled(true);
+
+    // always show paternal tree by default (lazy load images as nodes build)
+    showRootAncestor(id, "father");
+    window.scrollTo(0,0);
+}
+
+// find root ancestor along chosen side and show tree
+function showRootAncestor(id, side) {
+    selectedPersonId = id;
+
+    let current = persons[id];
+    while (current && current[side]) {
+        current = persons[current[side]];
+    }
+    if (!current) return;
+
+    const clickedName = persons[id].name;
+    setTitle((side === "father" ? "Paternal Tree of " : "Maternal Tree of ") + clickedName);
+
+    screen2.style.display = "none";
+    screen3.style.display = "none";
+
+    // clear old intervals (good hygiene) — optional
+    // (we will replace tree content entirely)
+    treeDiv.innerHTML = "";
+    treeDiv.style.display = "block";
+
+    // As we build nodes, we also ensure each node triggers its own image loading (lazy)
+    treeDiv.appendChild(buildNode(current, 0));
+    window.scrollTo(0,0);
+}
+
+// -------------------- Buttons --------------------
+document.getElementById("homeBtn").onclick = () => {
+    setTitle("Family Tree");
+    screen1.style.display = "grid";
+    screen2.style.display = "none";
+    screen3.style.display = "none";
+    treeDiv.style.display = "none";
+    currentPersonId = null;
+    selectedPersonId = null;
+    setButtonsEnabled(false);
+    window.scrollTo(0,0);
+};
+
+document.getElementById("paternalBtn").onclick = () => {
+    if (currentPersonId) showRootAncestor(currentPersonId, "father");
+};
+document.getElementById("maternalBtn").onclick = () => {
+    if (currentPersonId) showRootAncestor(currentPersonId, "mother");
+};
+
+// -------------------- Helpers --------------------
+function setTitle(text) {
+    document.getElementById("title").textContent = text;
+}
+
+function setButtonsEnabled(enabled) {
+    document.getElementById("paternalBtn").disabled = !enabled;
+    document.getElementById("maternalBtn").disabled = !enabled;
+}
+</script>
+</body>
+</html>
