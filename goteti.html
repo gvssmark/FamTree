@@ -85,6 +85,7 @@ nameLine += `</b>`
             photo.src = showingSpouse
                 ? `https://gvssmark.github.io/FamTree/photos/${person.id}.JPG`
                 : spousePhoto;
+            photo.onerror = () => {photo.style.display='none' };
             showingSpouse = !showingSpouse;
         }, 3000);
     }
