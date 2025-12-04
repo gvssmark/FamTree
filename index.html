@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -34,6 +37,31 @@
     .buttons { display:flex; gap:8px; flex-wrap:wrap; }
     .buttons button { margin:0; padding:6px 12px; }
     .content { margin-top:90px; }
+    
+    /* --------- Generation Badge (Top-right Corner) --------- */
+.gen-badge-circle {
+    position: absolute;
+    top: 5px;
+    right: 4px;
+    background: black;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 11px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    z-index: 20;
+    box-shadow: 0 0 4px rgba(0,0,0,0.3);
+    user-select: none;
+}
+.node {
+    position: relative;   /* required to anchor the badge */
+}
+.idno{font-size:xx-small; color:red; display:none;}
+
 </style>
 </head>
 <body>
@@ -140,6 +168,12 @@ function buildNode(person, level) {
     const wrap = document.createElement("div");
     const node = document.createElement("div");
     node.className = "node";
+    // Add generation badge
+const badge = document.createElement("div");
+badge.className = "gen-badge-circle";
+badge.textContent = "G" + level;
+node.appendChild(badge);
+
     node.style.background = genColors[level] || "#f7f7f7";
 
     if (person.id === selectedPersonId) {
@@ -172,23 +206,23 @@ function buildNode(person, level) {
     const textDiv = document.createElement("div");
     textDiv.className = "text";
 
-    let nameLine = `<b>${person.name}`;
-    if (person.dob) nameLine += ` (${formatDOB(person.dob)})`;
-    nameLine += `</b>`;
+    let nameLine = `<b>${person.name} <span class='idno'> (${person.id})</span></b>`; //person id added. remove as needed
+    if (person.dob) nameLine += ` (${formatDOB(person.dob)}) `;
+    nameLine += `</bx>`;
 
     // spouse clickable name
     let spouseLine = "";
     if (person.spouse && persons[person.spouse]) {
         const sp = persons[person.spouse];
         spouseLine =
-          `<span style='font-size:12px;color:blue;cursor:pointer;text-decoration:underline'
+          `<span style='color:blue;cursor:pointer;'
                  onclick='event.stopPropagation(); selectedPersonId=${sp.id}; currentPersonId=${sp.id}; showRootAncestor(${sp.id},"father");'
-           >${sp.name}`;
+           >${sp.name} <span class='idno'>(${sp.id})</span>`;//spouse id added. remove as needed
         if (sp.dob) spouseLine += ` (${formatDOB(sp.dob)})`;
         spouseLine += `</span>`;
     }
 
-    textDiv.innerHTML = `${nameLine}${spouseLine}`;
+    textDiv.innerHTML = `${nameLine}  ${spouseLine}`;
     node.appendChild(photo);
     node.appendChild(textDiv);
 
