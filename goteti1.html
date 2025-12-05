@@ -1,58 +1,139 @@
-
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Family Tree</title>
+<script src="index.js" defer></script>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#317EFB"/>
 <script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
+
 <style>
-    body { font-family: Arial; font-size:small; margin:0; }
-    .tree-container { padding: 10px; }
-    .node {
-        display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
-        padding: 5px; border: 1px solid #444; border-radius: 10px;
-        cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;
-    }
-    .children { margin-left: 2px; border-left: 1px solid #bbb; padding-left: 10px; display: block; }
-    .visible { display: block !important; }
-    .photo { width: 30px; height: 30px; object-fit: cover; border-radius: 50%; margin-right: 10px; border:1px solid black; }
-    .text { display: flex; flex-direction: column; justify-content: center; }
-    .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-    .surname { cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px; margin:3px; text-align:center; background:#f7f7f7; }
-    .member { cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px; margin:3px; background:#f7f7f7; }
-    .topbar {
-        position:fixed; top:0; left:0; right:0;
-        background:#eee; padding:10px; border-bottom:1px solid #444;
-        text-align:center; z-index:1000;
-        display:flex; flex-direction:column; align-items:center; gap:6px;
-    }
-    .title { margin:0; font-weight:bold; color:#d00; }
-    .buttons { display:flex; gap:8px; flex-wrap:wrap; }
-    .buttons button { margin:0; padding:6px 12px; }
-    .content { margin-top:90px; } /* push content below fixed topbar */
+body { font-family: Arial; font-size: small; margin: 0; }
+.tree-container { padding: 10px; }
+
+.node {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 5px;
+    border: 1px solid #444;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 5px;
+    min-width: 220px;
+    position: relative;
+}
+
+.children { 
+    margin-left: 2px; 
+    border-left: 1px solid #bbb; 
+    padding-left: 10px; 
+}
+
+.children.collapsed { display: none; }
+.children.expanded { display: block; }
+
+.gen-badge-circle {
+    position: absolute;
+    top: 5px;
+    right: 4px;
+    background: black;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 4px rgba(0,0,0,0.4);
+    user-select: none;
+}
+
+.photo {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin-right: 10px;
+    border: 1px solid black;
+}
+
+.text { display: flex; flex-direction: column; }
+
+.two-columns { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 10px; 
+    padding: 10px; 
+}
+
+.surname, .member {
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    margin: 3px;
+    background: #f7f7f7;
+}
+
+.topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: #eee;
+    padding: 10px;
+    border-bottom: 1px solid #444;
+    text-align: center;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.title { margin: 0; font-weight: bold; color: #d00; }
+.buttons { display: flex; gap: 8px; }
+.buttons button { padding: 6px 12px; }
+
+.search-highlight {
+    border: 3px solid orange !important;
+    box-shadow: 0 0 10px orange !important;
+}
+
+.content { margin-top: 150px; }
+.idno { font-size: xx-small; color: red; display: none; }
+#searchBox {display:none}
 </style>
 </head>
+
 <body>
 <div class="topbar">
     <div class="title" id="title">Family Tree</div>
+
     <div class="buttons">
         <button id="paternalBtn" disabled>Paternal</button>
         <button id="maternalBtn" disabled>Maternal</button>
         <button id="homeBtn">Home</button>
     </div>
+
+    <input id="searchBox" type="text" placeholder="Search name…" 
+           style="width:90%; padding:6px; font-size:16px; border:1px solid #444; border-radius:5px;">
+
+    <label style="font-size:14px;">
+        <input type="checkbox" id="expandAllToggle"> Expand All
+    </label>
 </div>
 
-<!-- Screens -->
 <div id="screen1" class="two-columns content"></div>
 <div id="screen2" class="content" style="display:none;"></div>
-<div id="screen3" class="content" style="display:none;"></div>
 <div id="tree" class="tree-container content" style="display:none;"></div>
 
 <script>
-// ------------------ Input Data ------------------
+// -------------------- Data --------------------
 const raw = gvss;
-// ------------------------------------------------
 const data = raw.slice(1).map(r => ({
     id: Number(r[0]),
     name: r[1],
@@ -65,70 +146,143 @@ const data = raw.slice(1).map(r => ({
 }));
 
 const persons = {};
-data.forEach(p => { persons[p.id] = { ...p, children: [] }; });
+data.forEach(p => persons[p.id] = { ...p, children: [] });
 data.forEach(p => {
     if (p.father && persons[p.father]) persons[p.father].children.push(p.id);
     if (p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
 });
 
-// Colors
-const genColors = ["#cce6ff","#d5f5d5","#fff4b3","#ffd6e7","#e0e0e0", "#C9901D", "#56C91D", "#ACC91D"];
-function formatDOB(dob) {
-    if (!dob) return "";
-    const date = new Date(dob);
-    return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+// ---------------- Image Cache ----------------
+const basePhotoUrl = id => `https://gvssmark.github.io/FamTree/photos/${id}.JPG`;
+const noImageUrl = 'https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true';
+const imgCache = {};
+
+(function preloadNoImage(){
+    const img = new Image();
+    img.src = noImageUrl;
+    imgCache['noimage'] = { status:'loaded', img };
+})();
+
+function loadImageById(id) {
+    if (!id) return Promise.resolve(imgCache['noimage'].img);
+    const key = String(id);
+
+    if (imgCache[key]) {
+        if (imgCache[key].status === 'loaded') return Promise.resolve(imgCache[key].img);
+        return imgCache[key].promise;
+    }
+
+    const img = new Image();
+    const p = new Promise(resolve => {
+        img.onload = () => {
+            imgCache[key].status = 'loaded';
+            imgCache[key].img = img;
+            resolve(img);
+        };
+        img.onerror = () => {
+            imgCache[key].status = 'error';
+            imgCache[key].img = imgCache['noimage'].img;
+            resolve(imgCache['noimage'].img);
+        };
+    });
+
+    imgCache[key] = { status:'loading', promise:p };
+    img.src = basePhotoUrl(id);
+    return p;
 }
 
-// Build node
+// ---------------- Utils ----------------
+let selectedPersonId = null;
+let currentPersonId = null;
+
+const genColors = ["#cce6ff","#d5f5d5","#fff4b3","#ffd6e7","#e0e0e0","#edd7aa","#b9dda7","#dba7d4","#b5aeb5"];
+const genBadgeColors = ["#000","#1a73e8","#0f9d58","#f4b400","#db4437","#673ab7","#0097a7","#5c6bc0","#795548"];
+
+function formatDOB(dob){
+    if(!dob) return "";
+    const d=new Date(dob);
+    return d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+}
+
+// ---------------- Build Node ----------------
 function buildNode(person, level) {
     const wrap = document.createElement("div");
     const node = document.createElement("div");
     node.className = "node";
-    node.style.background = genColors[level] || "#f7f7f7";
+    node.style.background = genColors[level] || "#eee";
 
+    // Generation badge
+    const badge = document.createElement("div");
+    badge.className = "gen-badge-circle";
+    badge.textContent = "G" + level;
+    badge.style.background = genBadgeColors[level] || "#000";
+    node.appendChild(badge);
+
+    // Photo
     const photo = document.createElement("img");
     photo.className = "photo";
-    photo.src = `https://gvssmark.github.io/FamTree/photos/${person.id}.JPG`;
-    photo.onerror = () => {photo.src ='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true' };
+    photo.src = imgCache['noimage'].img.src;
+    loadImageById(person.id).then(img => photo.src = img.src);
 
- let spousePhoto = null;
-    if (person.spouse && persons[person.spouse]) {
-        spousePhoto = `https://gvssmark.github.io/FamTree/photos/${person.spouse}.JPG`;
-    }
-    
+    // Photo click => load paternal tree
+    photo.onclick = e => {
+        e.stopPropagation();
+        selectedPersonId = person.id;
+        currentPersonId = person.id;
+        showRootAncestor(person.id, "father");
+    };
+
+    // Text
     const textDiv = document.createElement("div");
     textDiv.className = "text";
-    let nameLine = `<b>${person.name}`;
+
+    let nameLine = `<b>${person.name} <span class='idno'>(${person.id})</span></b>`;
     if (person.dob) nameLine += ` (${formatDOB(person.dob)})`;
-    nameLine += `</b>`;
+
     let spouseLine = "";
     if (person.spouse && persons[person.spouse]) {
         const sp = persons[person.spouse];
-        spouseLine = `<span style='font-size:12px;color:blue'>${sp.name}`;
-        if (sp.dob) spouseLine += ` (${formatDOB(sp.dob)})`;
-        spouseLine += `</span>`;
+        spouseLine =
+          `<span style='color:blue;cursor:pointer;'
+            onclick='event.stopPropagation();selectedPersonId=${sp.id};currentPersonId=${sp.id};showRootAncestor(${sp.id},"father");'
+          >${sp.name}</span>`;
     }
-    textDiv.innerHTML = `${nameLine}${spouseLine}`;
 
+    textDiv.innerHTML = nameLine + " " + spouseLine;
     node.appendChild(photo);
     node.appendChild(textDiv);
-    
-    if (spousePhoto) {
-        let showingSpouse = false;
+
+    // Spouse image toggle
+    if (person.spouse && persons[person.spouse]) {
+        loadImageById(person.spouse);
+        let showSp = false;
         setInterval(() => {
-            photo.src = showingSpouse
-                ? `https://gvssmark.github.io/FamTree/photos/${person.id}.JPG`
-                : spousePhoto;
-            showingSpouse = !showingSpouse;
+            const selfImg = imgCache[String(person.id)]?.img?.src || imgCache['noimage'].img.src;
+            const spImg = imgCache[String(person.spouse)]?.img?.src || imgCache['noimage'].img.src;
+            photo.src = showSp ? selfImg : spImg;
+            showSp = !showSp;
         }, 3000);
     }
 
+    // Children (collapsed)
     const kids = document.createElement("div");
-    kids.className = "children";
-    node.onclick = () => kids.classList.toggle("visible");
+    kids.className = "children collapsed";
 
-    person.children.forEach(cid => {
-        kids.appendChild(buildNode(persons[cid], level + 1));
+    person.children.forEach(cid => kids.appendChild(buildNode(persons[cid], level+1)));
+
+    // Node click => expand/collapse only
+    node.addEventListener("click", ev => {
+        ev.stopPropagation();
+
+        if (kids.classList.contains("collapsed")) {
+            kids.classList.remove("collapsed");
+            kids.classList.add("expanded");
+        } else {
+            kids.classList.remove("expanded");
+            kids.classList.add("collapsed");
+        }
+
+        document.getElementById("expandAllToggle").checked = false;
     });
 
     wrap.appendChild(node);
@@ -136,104 +290,124 @@ function buildNode(person, level) {
     return wrap;
 }
 
-// ---------- Screen 1: Surnames (sorted) ----------
+// ---------------- UI ----------------
 const screen1 = document.getElementById("screen1");
-const surnames = [...new Set(data.map(p => p.name.split(" ")[0]))].sort((a,b) => a.localeCompare(b));
-surnames.forEach(sn => {
-    const div = document.createElement("div");
-    div.className = "surname";
-    div.textContent = sn;
-    div.onclick = () => showMembers(sn);
-    screen1.appendChild(div);
+const screen2 = document.getElementById("screen2");
+const treeDiv = document.getElementById("tree");
+
+// Surnames
+const surnames = [...new Set(data.map(p=>p.name.split(" ")[0]))].sort();
+surnames.forEach(sn=>{
+    const d=document.createElement("div");
+    d.className="surname";
+    d.textContent=sn;
+    d.onclick=()=>showMembers(sn);
+    screen1.appendChild(d);
 });
 
-// ---------- Screen 2: Members (sorted) ----------
-function showMembers(surname) {
-    setTitle(`Members of ${surname}`);
-    screen1.style.display = "none";
-    const screen2 = document.getElementById("screen2");
-    screen2.innerHTML = "";
-    screen2.style.display = "block";
+function showMembers(sn){
+    setTitle("Members of " + sn);
+    screen1.style.display="none";
+    screen2.style.display="block";
+    screen2.innerHTML="";
 
-    data
-        .filter(p => p.name.startsWith(surname))
-        .sort((a,b) => a.name.localeCompare(b.name))
-        .forEach(p => {
-            const div = document.createElement("div");
-            div.className = "member";
-            div.textContent = p.name;
-            div.onclick = () => showMemberOptions(p.id);
-            screen2.appendChild(div);
-        });
+    const members = data.filter(p=>p.name.startsWith(sn)).sort((a,b)=>a.name.localeCompare(b.name));
+    members.forEach(p=>{
+        const d=document.createElement("div");
+        d.className="member";
+        d.textContent=p.name;
+        d.onclick=()=>showMemberOptions(p.id);
+        screen2.appendChild(d);
+    });
 
-    // No active member yet
+    treeDiv.style.display="none";
     setButtonsEnabled(false);
-    document.getElementById("tree").style.display = "none";
-    document.getElementById("screen3").style.display = "none";
-    window.scrollTo(0,0);   // <-- jump to top
-
 }
 
-// ---------- Screen 3: Member Options ----------
-let currentPersonId = null;
-function showMemberOptions(id) {
-    currentPersonId = id;
-    setTitle(persons[id].name);
-    document.getElementById("screen2").style.display = "none";
-    document.getElementById("screen3").style.display = "block";
-    document.getElementById("tree").style.display = "none";
+function showMemberOptions(id){
+    currentPersonId=id;
+    selectedPersonId=id;
     setButtonsEnabled(true);
-    window.scrollTo(0,0);   // <-- jump to top
-
+    showRootAncestor(id,"father");
 }
 
-// ---------- Find Root Ancestor and show tree ----------
-function showRootAncestor(id, side) {
-    let current = persons[id];
-    while (current && current[side]) {
-        current = persons[current[side]];
+function showRootAncestor(id,side){
+    selectedPersonId=id;
+    let cur=persons[id];
+    while(cur && cur[side]) cur=persons[cur[side]];
+
+    if(!cur) return;
+
+    setTitle((side=="father"?"Paternal Tree of ":"Maternal Tree of ") + persons[id].name);
+
+    screen2.style.display="none";
+    treeDiv.style.display="block";
+    treeDiv.innerHTML="";
+
+    treeDiv.appendChild(buildNode(cur,0));
+}
+
+// ---------------- Search ----------------
+document.getElementById("searchBox").addEventListener("input", () => {
+    const q = searchBox.value.trim().toLowerCase();
+    if (!q) return;
+
+    const match = data.find(p => p.name.toLowerCase().includes(q));
+    if (!match) return;
+
+    selectedPersonId = match.id;
+    currentPersonId = match.id;
+    showRootAncestor(match.id, "father");
+
+    setTimeout(() => highlightFoundPerson(match.id), 200);
+});
+
+function highlightFoundPerson(id){
+    document.querySelectorAll(".search-highlight")
+        .forEach(el=>el.classList.remove("search-highlight"));
+
+    const target = [...document.querySelectorAll(".idno")]
+        .find(e=>e.textContent.includes("(" + id + ")"));
+
+    if(!target) return;
+
+    const node = target.closest(".node");
+    if(node){
+        node.classList.add("search-highlight");
+        node.scrollIntoView({behavior:"smooth", block:"center"});
     }
-    if (!current) return;
-    const clickedName = persons[id].name;
-    setTitle((side === "father" ? "Paternal Tree of " : "Maternal Tree of ") + clickedName);
-
-    document.getElementById("screen3").style.display = "none";
-    const treeDiv = document.getElementById("tree");
-    treeDiv.innerHTML = "";
-    treeDiv.style.display = "block";
-    treeDiv.appendChild(buildNode(current, 0));
-    window.scrollTo(0,0);   // <-- jump to top
-
 }
 
-// ---------- Button Actions ----------
-document.getElementById("homeBtn").onclick = () => {
+// ---------------- Expand / Collapse All ----------------
+document.getElementById("expandAllToggle").addEventListener("change", function(){
+    const expand = this.checked;
+
+    document.querySelectorAll(".children").forEach(div => {
+        div.classList.remove("collapsed","expanded");
+        div.classList.add(expand ? "expanded" : "collapsed");
+    });
+});
+
+// ---------------- Buttons ----------------
+document.getElementById("homeBtn").onclick=()=>{
     setTitle("Family Tree");
-    document.getElementById("screen1").style.display = "grid";
-    document.getElementById("screen2").style.display = "none";
-    document.getElementById("screen3").style.display = "none";
-    document.getElementById("tree").style.display = "none";
-    currentPersonId = null;
+    screen1.style.display="grid";
+    screen2.style.display="none";
+    treeDiv.style.display="none";
     setButtonsEnabled(false);
-    window.scrollTo(0,0);   // <-- jump to top
-
 };
 
-document.getElementById("paternalBtn").onclick = () => {
-    if (currentPersonId) showRootAncestor(currentPersonId, "father");
-};
-document.getElementById("maternalBtn").onclick = () => {
-    if (currentPersonId) showRootAncestor(currentPersonId, "mother");
-};
+document.getElementById("paternalBtn").onclick=()=>currentPersonId && showRootAncestor(currentPersonId,"father");
+document.getElementById("maternalBtn").onclick=()=>currentPersonId && showRootAncestor(currentPersonId,"mother");
 
-// ---------- Helpers ----------
-function setTitle(text) {
-    document.getElementById("title").textContent = text;
+function setTitle(t){
+    document.getElementById("title").textContent=t;
 }
-function setButtonsEnabled(enabled) {
-    document.getElementById("paternalBtn").disabled = !enabled;
-    document.getElementById("maternalBtn").disabled = !enabled;
+function setButtonsEnabled(v){
+    document.getElementById("paternalBtn").disabled=!v;
+    document.getElementById("maternalBtn").disabled=!v;
 }
 </script>
+
 </body>
 </html>
