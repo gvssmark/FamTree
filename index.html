@@ -1,0 +1,344 @@
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Family Tree</title>
+       <script src="index.js" defer></script>
+	   <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#317EFB"/>
+
+	<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
+
+
+
+<style>
+body { font-family: Arial; font-size:small; margin:0; }
+.tree-container { padding: 10px; max-width: 800px; margin: auto; }
+.node {
+    display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
+    padding: 5px; border: 1px solid #444; border-radius: 10px;
+    cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;
+    position: relative;
+}
+.children { margin-left: 2px; border-left: 1px solid #bbb; padding-left: 10px; }
+.collapsed { display:none; }
+.expanded { display:block; }
+
+.photo { 
+    width: 60px; height: 60px; object-fit: cover; border-radius: 50%; 
+    margin-right: 10px; border:1px solid black; background:#fff; 
+}
+.photo.clickable { cursor: pointer; }
+.text { display: flex; flex-direction: column; justify-content: center; }
+.two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 800px; margin: auto; }
+
+.surname, .member {
+    cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px;
+    margin:3px; background:#f7f7f7; text-align:center;
+}
+
+.topbar {
+    position:fixed; top:0; left:0; right:0;
+    background:#eee; padding:10px; border-bottom:1px solid #444;
+    text-align:center; z-index:1000;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    max-width: 800px; margin: auto;
+}
+.title { margin:0; font-weight:bold; color:#d00; }
+.buttons { display:flex; gap:8px; flex-wrap:wrap; }
+.buttons button { padding:6px 12px; }
+
+.content { margin: 147px auto 0 auto; max-width: 800px;  }
+
+/* Generation badge */
+.gen-badge-circle {
+    position:absolute; top:5px; right:4px;
+    width:22px; height:22px; background:black; color:white;
+    border-radius:50%; display:flex; justify-content:center;
+    align-items:center; font-size:11px; font-weight:bold;
+}
+
+.idno { font-size:xx-small; color:red; display:none; }
+
+/* Search dropdown */
+#searchResults {
+    position: absolute;
+    top: 105px;
+    width: 90%; max-width: 720px;
+    background: white;
+    border: 1px solid #666;
+    border-radius: 5px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 2000;
+    display: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+}
+.search-item {
+    padding: 8px; border-bottom: 1px solid #ddd;
+    cursor: pointer; background: #fafafa;
+}
+.search-item:hover { background:#e0e0e0; }
+
+/* highlight found person */
+.search-highlight {
+    border: 3px solid orange !important;
+    box-shadow: 0 0 10px orange !important;
+}
+</style>
+</head>
+<body>
+<div class="topbar">
+    <div class="title" id="title">Family Tree</div>
+
+    <div class="buttons">
+        <button id="paternalBtn" disabled>Paternal</button>
+        <button id="maternalBtn" disabled>Maternal</button>
+        <button id="homeBtn">Home</button>
+    </div>
+
+    <input id="searchBox" type="text" placeholder="Search name…" style="width:90%; padding:6px; font-size:16px; border:1px solid #444; border-radius:5px;">
+    <div id="searchResults"></div>
+
+    <button id="expandAllToggle" style="font-size:14px;">Expand All</button>
+</div>
+
+<div id="screen1" class="two-columns content"></div>
+<div id="screen2" class="content" style="display:none;"></div>
+<div id="tree" class="tree-container content" style="display:none;"></div>
+
+<script>
+const raw = gvss;
+const data = raw.slice(1).map(r=>({
+    id: Number(r[0]), name: r[1], gender: r[2],
+    father: r[3]?Number(r[3]):null,
+    mother: r[4]?Number(r[4]):null,
+    spouse: r[5]?Number(r[5]):null,
+    dob: r[6], telugu: r[7]
+}));
+
+const persons = {};
+data.forEach(p=>persons[p.id]={...p, children:[]});
+data.forEach(p=>{
+    if(p.father && persons[p.father]) persons[p.father].children.push(p.id);
+    if(p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
+});
+
+// Image setup
+const noImageUrl='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true';
+const imgCache={};
+(function(){const img=new Image(); img.src=noImageUrl; imgCache['noimage']={status:'loaded', img};})();
+
+function loadImageById(id){
+    if(!id) return Promise.resolve(imgCache['noimage'].img);
+    const key=String(id);
+    if(imgCache[key]){
+        if(imgCache[key].status==='loaded') return Promise.resolve(imgCache[key].img);
+        return imgCache[key].promise;
+    }
+    const img=new Image();
+    const p=new Promise(res=>{
+        img.onload=()=>{ imgCache[key].status='loaded'; imgCache[key].img=img; res(img); };
+        img.onerror=()=>{ imgCache[key].status='error'; imgCache[key].img=imgCache['noimage'].img; res(imgCache['noimage'].img); };
+    });
+    imgCache[key]={status:'loading', img:null, promise:p};
+    img.src=`https://gvssmark.github.io/FamTree/photos/${id}.JPG`;
+    return p;
+}
+
+// Tree setup
+let selectedPersonId=null;
+let currentPersonId=null;
+const genBadgeColors=["#000","#1a73e8","#0f9d58","#f4b400","#db4437","#673ab7","#0097a7","#5c6bc0","#795548"];
+const genNodeColors=["#f0f0f0","#e0f2ff","#e0ffe0","#fff8e0","#ffe0e0","#f3e0ff","#e0ffff","#e8eaf6","#f5f5dc"];
+
+function formatDOB(dob){ if(!dob) return ""; return new Date(dob).toLocaleDateString("en-US",{month:"short",day:"numeric"}); }
+
+function buildNode(person, level){
+    const wrap=document.createElement("div");
+    const node=document.createElement("div");
+    node.className="node";
+    node.style.background=genNodeColors[level]||"#f0f0f0";
+
+    const badge=document.createElement("div");
+    badge.className="gen-badge-circle";
+    badge.textContent="G"+level;
+    badge.style.background=genBadgeColors[level]||"#000";
+    node.appendChild(badge);
+
+    const photo=document.createElement("img");
+    photo.className="photo";
+    photo.src=imgCache['noimage'].img.src;
+    loadImageById(person.id).then(img=>{ if(photo) photo.src=img.src; });
+
+    const textDiv=document.createElement("div");
+    textDiv.className="text";
+    let nameLine=`<b>${person.name} <span class='idno'>(${person.id})</span></b>`;
+    if(person.dob) nameLine+=` (${formatDOB(person.dob)})`;
+    textDiv.innerHTML=nameLine;
+    node.appendChild(photo);
+    node.appendChild(textDiv);
+
+    if(person.id===selectedPersonId) node.classList.add("search-highlight");
+
+    // Spouse photo toggle + clickable photo
+    if(person.spouse && persons[person.spouse]){
+        loadImageById(person.spouse).then(spImg=>{
+            let showPerson=true;
+            setInterval(()=>{
+                photo.src = showPerson ? imgCache[person.id]?.img.src || imgCache['noimage'].img.src : spImg.src;
+                showPerson=!showPerson;
+            },3000);
+        });
+        
+        // Make photo clickable to switch to spouse
+        photo.classList.add("clickable");
+        photo.style.cursor = "pointer";
+        photo.addEventListener("click", ev=>{
+            ev.stopPropagation();
+            currentPersonId=person.spouse; 
+            selectedPersonId=person.spouse;
+            showRootAncestor(person.spouse,"father");
+        });
+    }
+
+    const kids=document.createElement("div");
+    kids.className="children collapsed";
+    node.addEventListener("click",ev=>{
+        ev.stopPropagation();
+        kids.classList.toggle("collapsed");
+        kids.classList.toggle("expanded");
+        document.getElementById("expandAllToggle").textContent="Expand All";
+    });
+
+    // Add spouse clickable name
+    if(person.spouse && persons[person.spouse]){
+        const spLine=document.createElement("div");
+        spLine.style.color="blue"; spLine.style.cursor="pointer"; spLine.textContent=persons[person.spouse].name;
+        spLine.addEventListener("click",ev=>{
+            ev.stopPropagation();
+            currentPersonId=person.spouse; selectedPersonId=person.spouse;
+            showRootAncestor(person.spouse,"father");
+        });
+        textDiv.appendChild(spLine);
+    }
+
+    person.children.forEach(cid=>kids.appendChild(buildNode(persons[cid],level+1)));
+
+    wrap.appendChild(node);
+    if(person.children.length>0) wrap.appendChild(kids);
+    return wrap;
+}
+
+// UI screens
+const screen1=document.getElementById("screen1");
+const screen2=document.getElementById("screen2");
+const treeDiv=document.getElementById("tree");
+
+[...new Set(data.map(p=>p.name.split(" ")[0]))].sort().forEach(sn=>{
+    const d=document.createElement("div"); d.className="surname"; d.textContent=sn; d.onclick=()=>showMembers(sn); screen1.appendChild(d);
+});
+
+function showMembers(surname){
+    setTitle(`Members of ${surname}`);
+    screen1.style.display="none"; screen2.style.display="block"; screen2.innerHTML="";
+    data.filter(p=>p.name.startsWith(surname)).sort((a,b)=>a.name.localeCompare(b.name)).forEach(p=>{
+        const d=document.createElement("div"); d.className="member"; d.textContent=p.name; d.onclick=()=>showMemberOptions(p.id); screen2.appendChild(d);
+    });
+    setButtonsEnabled(false);
+    treeDiv.style.display="none";
+}
+
+function showMemberOptions(id){
+    currentPersonId=id; selectedPersonId=id;
+    setButtonsEnabled(true);
+    showRootAncestor(id,"father");
+}
+
+function showRootAncestor(id, side){
+    selectedPersonId=id;
+    let root=persons[id];
+    while(root && root[side]) root=persons[root[side]];
+    if(!root) root=persons[id];
+    setTitle((side==="father"?"Paternal Tree of ":"Maternal Tree of ")+persons[id].name);
+    screen1.style.display="none"; screen2.style.display="none"; treeDiv.style.display="block";
+    treeDiv.innerHTML=""; treeDiv.appendChild(buildNode(root,0));
+    setButtonsEnabled(true);
+    scrollToHighlightedPerson();
+}
+
+function scrollToHighlightedPerson(){
+    setTimeout(() => {  // **UPDATE 4**: Added timeout for smooth scroll after expand
+        const node=document.querySelector(".search-highlight");
+        if(node) node.scrollIntoView({ behavior:"smooth", block:"center" });
+    }, 300);
+}
+
+// Buttons
+const paternalBtn=document.getElementById("paternalBtn");
+const maternalBtn=document.getElementById("maternalBtn");
+const expandBtn = document.getElementById("expandAllToggle");  // **UPDATE 2**: Button reference
+document.getElementById("homeBtn").onclick=()=>{ 
+    setTitle("Family Tree"); 
+    screen1.style.display="grid"; 
+    screen2.style.display="none"; 
+    treeDiv.style.display="none"; 
+    setButtonsEnabled(false); 
+    expandBtn.textContent = "Expand All";  // **UPDATE 2**: Reset button text
+};
+
+paternalBtn.onclick=()=>{
+    currentPersonId && showRootAncestor(currentPersonId,"father");
+    expandBtn.textContent = "Expand All";  // **UPDATE 2**: Reset on Paternal click
+};
+maternalBtn.onclick=()=>{
+    currentPersonId && showRootAncestor(currentPersonId,"mother");
+    expandBtn.textContent = "Expand All";  // **UPDATE 2**: Reset on Maternal click
+};
+
+function setTitle(t){ document.getElementById("title").textContent=t; }
+function setButtonsEnabled(en){ paternalBtn.disabled=maternalBtn.disabled=!en; }
+
+// **UPDATE 2**: Expand button functionality
+expandBtn.addEventListener("click", function(){
+    const isExpanded = this.textContent === "Expand All";
+    document.querySelectorAll(".children").forEach(div=>{
+        div.classList.remove("collapsed","expanded");
+        div.classList.add(isExpanded ? "expanded" : "collapsed");
+    });
+    this.textContent = isExpanded ? "Collapse All" : "Expand All";
+    if(isExpanded) scrollToHighlightedPerson();  // **UPDATE 4**: Scroll on expand
+});
+
+// Search **UPDATE 1**: Clear searchbox after selection
+const searchBox=document.getElementById("searchBox");
+const searchResults=document.getElementById("searchResults");
+document.addEventListener("click",()=>searchResults.style.display="none");
+searchBox.addEventListener("input",e=>{
+    const q=e.target.value.trim().toLowerCase(); searchResults.innerHTML="";
+    if(!q){ searchResults.style.display="none"; return; }
+    const matches=data.filter(p=>p.name.toLowerCase().includes(q));
+    if(matches.length===0){ searchResults.style.display="none"; return; }
+    matches.forEach(p=>{
+        const item=document.createElement("div"); 
+        item.className="search-item"; 
+        item.textContent=p.name;
+        item.onclick=(ev)=>{
+            ev.stopPropagation(); 
+            searchResults.style.display="none"; 
+            searchBox.value = "";  // **UPDATE 1**: Clear search box
+            selectedPersonId=p.id; 
+            currentPersonId=p.id; 
+            showRootAncestor(p.id,"father");
+            expandBtn.textContent = "Expand All";  // **UPDATE 2**: Reset button
+        };
+        searchResults.appendChild(item);
+    });
+    searchResults.style.display="block";
+});
+</script>
+</body>
+</html>
