@@ -1,17 +1,21 @@
+
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Family Tree</title>
-         <script src="index.js" defer></script>
+       <script src="index.js" defer></script>
 	   <link rel="manifest" href="manifest.json">
-
 <meta name="theme-color" content="#317EFB"/>
-<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
+
+	<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
+
+
+
 <style>
 body { font-family: Arial; font-size:small; margin:0; }
-.tree-container { padding: 10px; }
+.tree-container { padding: 10px; max-width: 800px; margin: auto; }
 .node {
     display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
     padding: 5px; border: 1px solid #444; border-radius: 10px;
@@ -22,9 +26,13 @@ body { font-family: Arial; font-size:small; margin:0; }
 .collapsed { display:none; }
 .expanded { display:block; }
 
-.photo { width: 60px; height: 60px; object-fit: cover; border-radius: 50%; margin-right: 10px; border:1px solid black; background:#fff; }
+.photo { 
+    width: 60px; height: 60px; object-fit: cover; border-radius: 50%; 
+    margin-right: 10px; border:1px solid black; background:#fff; 
+}
+.photo.clickable { cursor: pointer; }
 .text { display: flex; flex-direction: column; justify-content: center; }
-.two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+.two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 800px; margin: auto; }
 
 .surname, .member {
     cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px;
@@ -36,12 +44,13 @@ body { font-family: Arial; font-size:small; margin:0; }
     background:#eee; padding:10px; border-bottom:1px solid #444;
     text-align:center; z-index:1000;
     display:flex; flex-direction:column; align-items:center; gap:6px;
+    max-width: 800px; margin: auto;
 }
 .title { margin:0; font-weight:bold; color:#d00; }
 .buttons { display:flex; gap:8px; flex-wrap:wrap; }
 .buttons button { padding:6px 12px; }
 
-.content { margin-top:135px; }
+.content { margin-top:135px; max-width: 800px;  }
 
 /* Generation badge */
 .gen-badge-circle {
@@ -57,7 +66,7 @@ body { font-family: Arial; font-size:small; margin:0; }
 #searchResults {
     position: absolute;
     top: 105px;
-    width: 90%;
+    width: 90%; max-width: 720px;
     background: white;
     border: 1px solid #666;
     border-radius: 5px;
@@ -93,9 +102,7 @@ body { font-family: Arial; font-size:small; margin:0; }
     <input id="searchBox" type="text" placeholder="Search name…" style="width:90%; padding:6px; font-size:16px; border:1px solid #444; border-radius:5px;">
     <div id="searchResults"></div>
 
-    <label style="font-size:14px;">
-        <input type="checkbox" id="expandAllToggle"> Expand All
-    </label>
+    <button id="expandAllToggle" style="font-size:14px;">Expand All</button>
 </div>
 
 <div id="screen1" class="two-columns content"></div>
@@ -176,7 +183,7 @@ function buildNode(person, level){
 
     if(person.id===selectedPersonId) node.classList.add("search-highlight");
 
-    // Spouse photo toggle
+    // Spouse photo toggle + clickable photo
     if(person.spouse && persons[person.spouse]){
         loadImageById(person.spouse).then(spImg=>{
             let showPerson=true;
@@ -184,6 +191,16 @@ function buildNode(person, level){
                 photo.src = showPerson ? imgCache[person.id]?.img.src || imgCache['noimage'].img.src : spImg.src;
                 showPerson=!showPerson;
             },3000);
+        });
+        
+        // Make photo clickable to switch to spouse
+        photo.classList.add("clickable");
+        photo.style.cursor = "pointer";
+        photo.addEventListener("click", ev=>{
+            ev.stopPropagation();
+            currentPersonId=person.spouse; 
+            selectedPersonId=person.spouse;
+            showRootAncestor(person.spouse,"father");
         });
     }
 
@@ -193,7 +210,7 @@ function buildNode(person, level){
         ev.stopPropagation();
         kids.classList.toggle("collapsed");
         kids.classList.toggle("expanded");
-        document.getElementById("expandAllToggle").checked=false;
+        document.getElementById("expandAllToggle").textContent="Expand All";
     });
 
     // Add spouse clickable name
@@ -253,21 +270,49 @@ function showRootAncestor(id, side){
 }
 
 function scrollToHighlightedPerson(){
-    const node=document.querySelector(".search-highlight");
-    if(node) node.scrollIntoView({ behavior:"smooth", block:"center" });
+    setTimeout(() => {  // **UPDATE 4**: Added timeout for smooth scroll after expand
+        const node=document.querySelector(".search-highlight");
+        if(node) node.scrollIntoView({ behavior:"smooth", block:"center" });
+    }, 300);
 }
 
 // Buttons
 const paternalBtn=document.getElementById("paternalBtn");
 const maternalBtn=document.getElementById("maternalBtn");
-document.getElementById("homeBtn").onclick=()=>{ setTitle("Family Tree"); screen1.style.display="grid"; screen2.style.display="none"; treeDiv.style.display="none"; setButtonsEnabled(false); };
-paternalBtn.onclick=()=>currentPersonId && showRootAncestor(currentPersonId,"father");
-maternalBtn.onclick=()=>currentPersonId && showRootAncestor(currentPersonId,"mother");
+const expandBtn = document.getElementById("expandAllToggle");  // **UPDATE 2**: Button reference
+document.getElementById("homeBtn").onclick=()=>{ 
+    setTitle("Family Tree"); 
+    screen1.style.display="grid"; 
+    screen2.style.display="none"; 
+    treeDiv.style.display="none"; 
+    setButtonsEnabled(false); 
+    expandBtn.textContent = "Expand All";  // **UPDATE 2**: Reset button text
+};
+
+paternalBtn.onclick=()=>{
+    currentPersonId && showRootAncestor(currentPersonId,"father");
+    expandBtn.textContent = "Expand All";  // **UPDATE 2**: Reset on Paternal click
+};
+maternalBtn.onclick=()=>{
+    currentPersonId && showRootAncestor(currentPersonId,"mother");
+    expandBtn.textContent = "Expand All";  // **UPDATE 2**: Reset on Maternal click
+};
 
 function setTitle(t){ document.getElementById("title").textContent=t; }
 function setButtonsEnabled(en){ paternalBtn.disabled=maternalBtn.disabled=!en; }
 
-// Search
+// **UPDATE 2**: Expand button functionality
+expandBtn.addEventListener("click", function(){
+    const isExpanded = this.textContent === "Expand All";
+    document.querySelectorAll(".children").forEach(div=>{
+        div.classList.remove("collapsed","expanded");
+        div.classList.add(isExpanded ? "expanded" : "collapsed");
+    });
+    this.textContent = isExpanded ? "Collapse All" : "Expand All";
+    if(isExpanded) scrollToHighlightedPerson();  // **UPDATE 4**: Scroll on expand
+});
+
+// Search **UPDATE 1**: Clear searchbox after selection
 const searchBox=document.getElementById("searchBox");
 const searchResults=document.getElementById("searchResults");
 document.addEventListener("click",()=>searchResults.style.display="none");
@@ -277,17 +322,21 @@ searchBox.addEventListener("input",e=>{
     const matches=data.filter(p=>p.name.toLowerCase().includes(q));
     if(matches.length===0){ searchResults.style.display="none"; return; }
     matches.forEach(p=>{
-        const item=document.createElement("div"); item.className="search-item"; item.textContent=p.name;
-        item.onclick=(ev)=>{ ev.stopPropagation(); searchResults.style.display="none"; selectedPersonId=p.id; currentPersonId=p.id; showRootAncestor(p.id,"father"); };
+        const item=document.createElement("div"); 
+        item.className="search-item"; 
+        item.textContent=p.name;
+        item.onclick=(ev)=>{
+            ev.stopPropagation(); 
+            searchResults.style.display="none"; 
+            searchBox.value = "";  // **UPDATE 1**: Clear search box
+            selectedPersonId=p.id; 
+            currentPersonId=p.id; 
+            showRootAncestor(p.id,"father");
+            expandBtn.textContent = "Expand All";  // **UPDATE 2**: Reset button
+        };
         searchResults.appendChild(item);
     });
     searchResults.style.display="block";
-});
-
-// Expand/collapse
-document.getElementById("expandAllToggle").addEventListener("change",function(){ 
-    const expand=this.checked;
-    document.querySelectorAll(".children").forEach(div=>{ div.classList.remove("collapsed","expanded"); div.classList.add(expand?"expanded":"collapsed"); });
 });
 </script>
 </body>
