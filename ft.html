@@ -1,367 +1,566 @@
+
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<script>
-async function getMyData() {
-  const url = "https://script.google.com/macros/s/AKfycbycChH5D78kNO3bJYy1rvVZ0tvQWsXgloD19lYYZ3-5m6Q37szyPNqAIZRNCA2ZG1An/exec";
-  const response = await fetch(url);
-  const data = await response.json();
-  const tempData = data["user"];
-  return tempData.map(a => [a.id, a.name, a.gender, a.fid, a.mid, a.sid, a.photo]);
-}
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Family Tree</title>
+       <script src="index.js" defer></script>
+	   <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#317EFB"/>
 
-document.addEventListener("DOMContentLoaded", async () => {
-  const familyData = await getMyData();
+	<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
 
-  class Person {
-    constructor(id, name, gender) {
-      this.id = id;
-      this.name = name;
-      this.gender = gender;
-      this.children = [];
-      this.fatherId = null;
-      this.motherId = null;
-      this.spouseId = null; // Store spouse ID separately
-    }
-  }
 
-  // Create a map to store Person objects by their ID
-  const personMap = new Map();
 
-  // Create Person objects and add them to the map
-  for (const [id, name, gender, fatherId, motherId, spouseId] of familyData) {
-    const person = new Person(id, name, gender);
-    person.fatherId = fatherId;
-    person.motherId = motherId;
-    person.spouseId = spouseId;
-    personMap.set(id, person);
-  }
-
-  // Establish spouse relationships
-  for (const person of personMap.values()) {
-    const spouseId = person.spouseId;
-
-    if (spouseId !== null) {
-      const spouse = personMap.get(spouseId);
-
-      if (spouse) {
-        person.spouse = spouse;
-        spouse.spouse = person;
-      } else {
-        console.error(`Error: Person with ID ${spouseId} not found for spouse link.`);
-      }
-    }
-  }
-
-  // Link parents and children
-  for (const person of personMap.values()) {
-    const father = personMap.get(person.fatherId);
-    const mother = personMap.get(person.motherId);
-
-    if (father) {
-      father.children.push(person);
-    }
-
-    if (mother) {
-      mother.children.push(person);
-    }
-  }
-
-  let ftree = '';
-  // Function to display family tree starting from a person
-  function displayFamilyTree(person, depth = 0) {
-    const spaces = "&nbsp ".repeat(depth * 1.5);
-    ftree += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
-    for (const child of person.children) {
-      displayFamilyTree(child, depth + 1);
-    }
-  }
-
-  // Function to display parent details
-  function displayParentDetails(person) {
-    const father = personMap.get(person.fatherId);
-    const mother = personMap.get(person.motherId);
-
-    let parentDetails = '';
-    if (father) {
-      parentDetails += `<div><strong>Father:</strong> <span class='person' data-id='${father.id}'>${father.name}</span> (${father.gender})</div>`;
-    }
-    if (mother) {
-      parentDetails += `<div><strong>Mother:</strong> <span class='person' data-id='${mother.id}'>${mother.name}</span> (${mother.gender})</div>`;
-    }
-
-    return parentDetails;
-  }
-
-  // Function to handle click event on a person
-  function onPersonClick(event) {
-    const personId = parseInt(event.target.getAttribute('data-id'));
-    const person = personMap.get(personId);
-    if (person) {
-      let spouseDetails = '';
-      if (person.spouse) {
-        const spouseTitle = person.gender === 'M' ? 'Wife' : 'Husband';
-        spouseDetails = `<small class="spouse-name" data-id='${person.spouse.id}'>${spouseTitle}: ${person.spouse.name}</small>`;
-      }
-      document.getElementById('selectedPerson').innerHTML = `${person.name}<br>${spouseDetails}`;
-      ftree = '';
-      const parentDetails = displayParentDetails(person);
-      document.getElementById('parentDetails').innerHTML = parentDetails;
-      document.getElementById('paternalAncestors').innerHTML = '<h2>Paternal Ancestors</h2>';
-      document.getElementById('maternalAncestors').innerHTML = '<h2>Maternal Ancestors</h2>';
-      if (person.fatherId) displayAncestors(personMap.get(person.fatherId), 'paternalAncestors');
-      if (person.motherId) displayAncestors(personMap.get(person.motherId), 'maternalAncestors');
-      displayFamilyTree(person);
-      document.getElementById('descendants').innerHTML = '<h3>Descendants</h3>' + ftree;
-      attachEventListeners();
-      document.getElementById('personListDiv').style.display = 'none';
-      document.getElementById('familyTreeDiv').style.display = 'block';
-      checkOrientation(); // Check orientation to show/hide back button
-    } else {
-      console.error(`Error: Person with ID ${personId} not found.`);
-    }
-  }
-
-  // Function to display ancestors in the specified element
-  function displayAncestors(person, elementId, depth = 0) {
-    const spaces = "&nbsp ".repeat(depth * 1.5);
-    document.getElementById(elementId).innerHTML += `${spaces} <span class='depth${depth} person' data-id='${person.id}'>${person.name}</span> (${person.gender})<br>`;
-    if (person.fatherId) displayAncestors(personMap.get(person.fatherId), elementId, depth + 1);
-    if (person.motherId) displayAncestors(personMap.get(person.motherId), elementId, depth + 1);
-  }
-
-  // Function to attach event listeners to person elements
-  function attachEventListeners() {
-    const personElements = document.querySelectorAll('.person, .spouse-name');
-    personElements.forEach(personElement => {
-      personElement.addEventListener('click', onPersonClick);
-    });
-  }
-
-  // Display list of persons sorted alphabetically
-  function displayPersonList() {
-    const personListDiv = document.getElementById('personList');
-    const sortedPersons = Array.from(personMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-    for (const person of sortedPersons) {
-      const personElement = document.createElement('div');
-      personElement.classList.add('person');
-      personElement.setAttribute('data-id', person.id);
-      personElement.textContent = person.name;
-      personListDiv.appendChild(personElement);
-    }
-    attachEventListeners();
-  }
-
-  displayPersonList();
-
-  // Handle back button click
-  document.getElementById('backButton').addEventListener('click', () => {
-    document.getElementById('familyTreeDiv').style.display = 'none';
-    document.getElementById('personListDiv').style.display = 'block';
-    document.getElementById('backButton').style.display = 'none';
-  });
-
-  // Handle back to top button click
-  document.getElementById('backToTopButton').addEventListener('click', () => {
-    document.getElementById('familyTreeContent').scrollTop = 0;
-  });
-
-  // Show back to top button after scrolling 100px
-  document.getElementById('familyTreeContent').addEventListener('scroll', () => {
-    const backToTopButton = document.getElementById('backToTopButton');
-    if (document.getElementById('familyTreeContent').scrollTop > 20) {
-      backToTopButton.style.display = 'block';
-    } else {
-      backToTopButton.style.display = 'none';
-    }
-  });
-
-  // Function to check screen orientation and show/hide back button
-  function checkOrientation() {
-    const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-    if (isLandscape) {
-      document.getElementById('backButton').style.display = 'block';
-    } else {
-      document.getElementById('backButton').style.display = 'block';
-    }
-  }
-
-  // Listen for orientation changes
-  window.addEventListener("orientationchange", checkOrientation);
-
-  // Initial check for orientation
-  checkOrientation();
-
-  // Example: Display family tree starting from a specific person (e.g., person with ID 401)
-  const rootPersonId = 401; // Change this to the actual root person ID
-  const rootPerson = personMap.get(rootPersonId);
-
-  if (rootPerson) {
-    let spouseDetails = '';
-    if (rootPerson.spouse) {
-      const spouseTitle = rootPerson.gender === 'male' ? 'Wife' : 'Husband';
-      spouseDetails = `<small class="spouse-name" data-id='${rootPerson.spouse.id}'>${spouseTitle}: ${rootPerson.spouse.name}</small>`;
-    }
-    document.getElementById('selectedPerson').innerHTML = `${rootPerson.name}<br>${spouseDetails}`;
-    const parentDetails = displayParentDetails(rootPerson);
-    document.getElementById('parentDetails').innerHTML = parentDetails;
-    document.getElementById('paternalAncestors').innerHTML = '<h2>Paternal Ancestors</h2>';
-    document.getElementById('maternalAncestors').innerHTML = '<h2>Maternal Ancestors</h2>';
-    if (rootPerson.fatherId) displayAncestors(personMap.get(rootPerson.fatherId), 'paternalAncestors');
-    if (rootPerson.motherId) displayAncestors(personMap.get(rootPerson.motherId), 'maternalAncestors');
-    displayFamilyTree(rootPerson);
-    document.getElementById('descendants').innerHTML = '<h2>Descendants</h2>' + ftree;
-    attachEventListeners();
-  } else {
-    console.error(`Error: Root person with ID ${rootPersonId} not found.`);
-  }
-});
-</script>
 <style>
-body {
-  background: black;
-  color: white;
-  width: 360px;
+body { font-family: Arial; font-size:small; margin:0; }
+.tree-container { padding: 10px; max-width: 800px; margin: auto; }
+.node {
+    display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
+    padding: 5px; border: 1px solid #444; border-radius: 10px;
+    cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;
+    position: relative;
 }
-.depth0 {
-  color: yellow;
+.children { margin-left: 2px; border-left: 1px solid #bbb; padding-left: 10px; }
+.collapsed { display:none; }
+.expanded { display:block; }
+
+.photo { 
+    width: 60px; height: 60px; object-fit: cover; border-radius: 50%; 
+    margin-right: 10px; border:1px solid black; background:#fff; 
 }
-.depth1 {
-  color: #FF0000;
+.photo.clickable { cursor: pointer; }
+.text { display: flex; flex-direction: column; justify-content: center; }
+.two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 800px; margin: auto; }
+
+.surname, .member {
+    cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px;
+    margin:3px; background:#f7f7f7; text-align:center;
 }
-.depth2 {
-  color: #00FF00;
+
+.topbar {
+    position:fixed; top:0; left:0; right:0;
+    background:#eee; padding:10px; border-bottom:1px solid #444;
+    text-align:center; z-index:1000;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    max-width: 800px; margin: auto;
 }
-.depth3 {
-  color: pink;
+.title { margin:0; font-weight:bold; color:#d00; }
+.buttons { display:flex; gap:8px; flex-wrap:wrap; }
+.buttons button { padding:6px 12px; }
+
+.content { margin: 69px auto 0 auto; max-width: 800px;  }
+
+/* Generation badge */
+.gen-badge-circle {
+    position:absolute; top:5px; right:4px;
+    width:22px; height:22px; background:black; color:white;
+    border-radius:50%; display:flex; justify-content:center;
+    align-items:center; font-size:11px; font-weight:bold;
 }
-.depth4 {
-  color: white;
+
+.idno { font-size:xx-small; color:red; display:none; }
+
+/* Search dropdown */
+#searchResults {
+    position: absolute;
+    top: 105px;
+    width: 90%; max-width: 720px;
+    background: white;
+    border: 1px solid #666;
+    border-radius: 5px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 2000;
+    display: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,.3);
 }
-.depth5 {
-  color: #00CED1;
+.search-item {
+    padding: 8px; border-bottom: 1px solid #ddd;
+    cursor: pointer; background: #fafafa;
 }
-.depth6 {
-  color: #008000;
+.search-item:hover { background:#e0e0e0; }
+
+/* highlight found person */
+.search-highlight {
+    border: 3px solid orange !important;
+    box-shadow: 0 0 10px orange !important;
 }
-.depth7 {
-  color: grey;
+
+/* ------------------------------------------
+   BOTTOM CIRCULAR BUTTON BAR
+--------------------------------------------- */
+#bottomBar {
+    position: fixed;
+    bottom: 5px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 5px 0;
+    z-index: 999;
 }
-.person {
-  cursor: pointer;
+
+.circle-btn {
+    width: 45px;
+    height: 45px;
+    background: #1a73e8;
+    color: white;
+    font-weight: bold;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    cursor: pointer;
+    box-shadow: 0 0 5px #555;
 }
-p {
-  width: 360px;
+
+/* ------------------------------------------
+   Search Magnifier
+--------------------------------------------- */
+#magnifierBtn {
+    position: fixed;
+    top: 8px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 900;
 }
-#personListDiv {
-  display: block;
+
+/* ------------------------------------------
+   Search Popup Window
+--------------------------------------------- */
+#searchPopup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backdrop-filter: blur(5px);
+    background: rgba(0,0,0,0.55);
+    z-index: 1000;
+    display: none;
+    justify-content: center;
+    align-items: start;
+    padding-top: 60px;
 }
-#familyTreeDiv {
-  display: none;
+
+#searchBoxPopup {
+    width: 80%;
+    padding: 12px;
+    font-size: 18px;
+    border-radius: 8px;
 }
-#stickyHeader {
-  position: -webkit-sticky;
-  position: sticky;
-  top: 0;
-  background: black;
-  padding: 10px 0;
-  z-index: 1;
+
+#searchResultsPopup {
+    background: white;
+    width: 80%;
+    max-height: 60%;
+    overflow-y: auto;
+    border-radius: 10px;
+    margin-top: 10px;
+    padding: 5px;
 }
-#familyTreeContent {
-  max-height: 100vh;
-  overflow-y: auto;
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
+.search-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
 }
-#familyTreeContent::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari, Opera*/
+.search-item:hover {
+    background: #eee;
 }
-#backButton {
-  display: none;
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-#backToTopButton {
-  display: none;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-.spouse-name {
-  font-size: small;
-}
-.tab {
-  display: inline-block;
-  padding: 10px;
-  cursor: pointer;
-  background-color: #333;
-  color: white;
-  border: 1px solid #444;
-}
-.tab.active {
-  background-color: #007BFF;
-}
+
+
 </style>
 </head>
 <body>
+<!-- Magnifying Glass -->
 
-<div id="personListDiv">
-  <h2>Persons List</h2>
-  <div id="personList"></div>
+
+<!-- Search Popup -->
+<div id="searchPopup">
+    <div>
+        <input id="searchBoxPopup" placeholder="Search name..." autofocus />
+        <div id="searchResultsPopup"></div>
+    </div>
 </div>
 
-<div id="familyTreeDiv">
-  <div id="stickyHeader">
-    <button id="backButton">←</button>
-    <h3 id="selectedPerson"></h3>
-    <div id="parentDetails"></div> <!-- Div to show parent details -->
-    <div id="tabs">
-      <div id="paternalTab" class="tab">Paternal Ancestors</div>
-      <div id="maternalTab" class="tab">Maternal Ancestors</div>
-    </div>
-    <div id="ancestors">
-      <div id="paternalAncestors"></div>
-      <div id="maternalAncestors" style="display:none;"></div>
-    </div>
-  </div>
-  <div id="familyTreeContent">
-    <div id="descendants"></div>
-  </div>
+<!-- Bottom Circular Button Bar -->
+<div id="bottomBar">
+    <div class="circle-btn" id="paternalBtn">P</div>
+    <div class="circle-btn" id="maternalBtn">M</div>
+    <div class="circle-btn" id="homeBtn">H</div>
+    <div class="circle-btn" id="expandBtnCircle">E</div>
 </div>
 
-<button id="backToTopButton">↑</button>
+
+
+<div class="topbar">
+    <div class="title" id="title">Family Tree</div>
+
+ 
+    <input id="searchBox" type="text" placeholder="Search name…" style="width:90%; padding:6px; font-size:16px; border:1px solid #444; border-radius:5px;">
+    <div id="searchResults"></div>
+
+    
+</div>
+
+<div id="screen1" class="two-columns content"></div>
+<div id="screen2" class="content" style="display:none;"></div>
+<div id="tree" class="tree-container content" style="display:none;"></div>
 
 <script>
-document.getElementById('paternalTab').addEventListener('click', () => {
-  document.getElementById('paternalAncestors').style.display = 'block';
-  document.getElementById('maternalAncestors').style.display = 'none';
-  document.getElementById('paternalTab').classList.add('active');
-  document.getElementById('maternalTab').classList.remove('active');
+/* --------------------------------------------------------------
+   BASIC PARSE
+-------------------------------------------------------------- */
+const raw = gvss;
+const data = raw.slice(1).map(r=>({
+    id: Number(r[0]), name: r[1], gender: r[2],
+    father: r[3]?Number(r[3]):null,
+    mother: r[4]?Number(r[4]):null,
+    spouse: r[5]?Number(r[5]):null,
+    dob: r[6], telugu: r[7]
+}));
+
+/* --------------------------------------------------------------
+   PERSON MAP + CHILDREN
+-------------------------------------------------------------- */
+const persons = {};
+data.forEach(p=>persons[p.id]={...p, children:[]});
+
+data.forEach(p=>{
+    if(p.father && persons[p.father]) persons[p.father].children.push(p.id);
+    if(p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
 });
 
-document.getElementById('maternalTab').addEventListener('click', () => {
-  document.getElementById('paternalAncestors').style.display = 'none';
-  document.getElementById('maternalAncestors').style.display = 'block';
-  document.getElementById('paternalTab').classList.remove('active');
-  document.getElementById('maternalTab').classList.add('active');
-});
+/* --------------------------------------------------------------
+   MULTIPLE SPOUSES DETECTION
+-------------------------------------------------------------- */
+function getSpouses(id){
+    return data.filter(p=> p.spouse === id);
+}
+
+/* --------------------------------------------------------------
+   IMAGE LOADER
+-------------------------------------------------------------- */
+const noImageUrl='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true';
+const imgCache={};
+(function(){const img=new Image(); img.src=noImageUrl; imgCache['noimage']={status:'loaded', img};})();
+
+function loadImageById(id){
+    if(!id) return Promise.resolve(imgCache['noimage'].img);
+    const key=String(id);
+    if(imgCache[key]){
+        if(imgCache[key].status==='loaded') return Promise.resolve(imgCache[key].img);
+        return imgCache[key].promise;
+    }
+    const img=new Image();
+    const p=new Promise(res=>{
+        img.onload=()=>{ imgCache[key].status='loaded'; imgCache[key].img=img; res(img); };
+        img.onerror=()=>{ imgCache[key].status='error'; imgCache[key].img=imgCache['noimage'].img; res(imgCache['noimage'].img); };
+    });
+    imgCache[key]={status:'loading', img:null, promise:p};
+    img.src=`https://gvssmark.github.io/FamTree/photos/${id}.JPG`;
+    return p;
+}
+
+/* --------------------------------------------------------------
+   TREE NODE BUILDER
+-------------------------------------------------------------- */
+let selectedPersonId=null;
+let currentPersonId=null;
+
+const genBadgeColors=["#000","#1a73e8","#0f9d58","#f4b400","#db4437","#673ab7","#0097a7","#5c6bc0","#795548"];
+const genNodeColors=["#f0f0f0","#e0f2ff","#e0ffe0","#fff8e0","#ffe0e0","#f3e0ff","#e0ffff","#e8eaf6","#f5f5dc"];
+
+function formatDOB(dob){
+    if(!dob) return "";
+    return new Date(dob).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+}
+
+function buildNode(person, level){
+    const wrap=document.createElement("div");
+    const node=document.createElement("div");
+    node.className="node";
+    node.style.background=genNodeColors[level]||"#f0f0f0";
+
+    const badge=document.createElement("div");
+    badge.className="gen-badge-circle";
+    badge.textContent="G"+level;
+    badge.style.background=genBadgeColors[level]||"#000";
+    node.appendChild(badge);
+
+    const photo=document.createElement("img");
+    photo.className="photo";
+    photo.src=imgCache['noimage'].img.src;
+    loadImageById(person.id).then(img=> photo.src=img.src );
+
+    const textDiv=document.createElement("div");
+    textDiv.className="text";
+
+    let nameLine=`<b>${person.name} <span class='idno'>(${person.id})</span></b>`;
+    if(person.dob) nameLine+=` (${formatDOB(person.dob)})`;
+    textDiv.innerHTML=nameLine;
+
+    node.appendChild(photo);
+    node.appendChild(textDiv);
+
+    if(person.id===selectedPersonId)
+        node.classList.add("search-highlight");
+
+    /* --------------------------------------------------------------
+       FIXED — MULTIPLE SPOUSES (NO DUPLICATES)
+    -------------------------------------------------------------- */
+
+    let spouseSet = new Map();
+
+    // reverse spouse links
+    getSpouses(person.id).forEach(s => spouseSet.set(s.id, s));
+
+    // forward spouse link
+    if (person.spouse && persons[person.spouse]) {
+        spouseSet.set(person.spouse, persons[person.spouse]);
+    }
+
+    let spouseList = Array.from(spouseSet.values());
+
+    /* SHOW SPOUSE NAMES */
+    spouseList.forEach(sp=>{
+        const spLine=document.createElement("div");
+        spLine.style.color="blue";
+        spLine.style.cursor="pointer";
+        spLine.textContent=sp.name;
+        spLine.onclick = ev=>{
+            ev.stopPropagation();
+            currentPersonId=sp.id;
+            selectedPersonId=sp.id;
+            showRootAncestor(sp.id,"father");
+        };
+        textDiv.appendChild(spLine);
+    });
+
+    /* PHOTO SLIDESHOW */
+    let slideshowIds=[person.id, ...spouseList.map(s=>s.id)];
+    let slideIndex=0;
+    setInterval(()=>{
+        loadImageById(slideshowIds[slideIndex]).then(img=> photo.src=img.src );
+        slideIndex = (slideIndex + 1) % slideshowIds.length;
+    },3000);
+
+    /* CLICK PHOTO = jump to spouse */
+    photo.classList.add("clickable");
+    photo.onclick = ev=>{
+        ev.stopPropagation();
+        if(spouseList.length>0){
+            currentPersonId = spouseList[0].id;
+            selectedPersonId = spouseList[0].id;
+            showRootAncestor(spouseList[0].id,"father");
+        }
+    };
+
+    /* CHILDREN */
+    const kids=document.createElement("div");
+    kids.className="children collapsed";
+
+    node.onclick = ev=>{
+        ev.stopPropagation();
+        kids.classList.toggle("collapsed");
+        kids.classList.toggle("expanded");
+        document.getElementById("expandAllToggle").textContent="Expand All";
+    };
+
+    persons[person.id].children.forEach(cid=>{
+        kids.appendChild(buildNode(persons[cid], level+1));
+    });
+
+    wrap.appendChild(node);
+    if(person.children.length>0) wrap.appendChild(kids);
+    return wrap;
+}
+
+/* --------------------------------------------------------------
+   UI SCREENS
+-------------------------------------------------------------- */
+const screen1=document.getElementById("screen1");
+const screen2=document.getElementById("screen2");
+const treeDiv=document.getElementById("tree");
+
+/* SURNAME LIST */
+[...new Set(data.map(p=>p.name.split(" ")[0]))]
+    .sort()
+    .forEach(sn=>{
+        const d=document.createElement("div");
+        d.className="surname";
+        d.textContent=sn;
+        d.onclick=()=>showMembers(sn);
+        screen1.appendChild(d);
+    });
+
+function showMembers(surname){
+    setTitle(`Members of ${surname}`);
+    screen1.style.display="none";
+    screen2.style.display="block";
+    screen2.innerHTML="";
+
+    data
+        .filter(p=>p.name.startsWith(surname))
+        .sort((a,b)=>a.name.localeCompare(b.name))
+        .forEach(p=>{
+            const d=document.createElement("div");
+            d.className="member";
+            d.textContent=p.name;
+            d.onclick=()=>showMemberOptions(p.id);
+            screen2.appendChild(d);
+        });
+
+    setButtonsEnabled(false);
+    treeDiv.style.display="none";
+}
+
+function showMemberOptions(id){
+    currentPersonId=id;
+    selectedPersonId=id;
+    setButtonsEnabled(true);
+    showRootAncestor(id,"father");
+}
+
+function showRootAncestor(id, side){
+    selectedPersonId=id;
+    let root=persons[id];
+    while(root && root[side]) root=persons[root[side]];
+    if(!root) root=persons[id];
+
+    setTitle((side==="father"?"Paternal Tree of ":"Maternal Tree of ") + persons[id].name);
+
+    screen1.style.display="none";
+    screen2.style.display="none";
+    treeDiv.style.display="block";
+    treeDiv.innerHTML="";
+
+    treeDiv.appendChild(buildNode(root,0));
+    setButtonsEnabled(true);
+
+    scrollToHighlightedPerson();
+}
+
+function scrollToHighlightedPerson(){
+    setTimeout(()=>{
+        const node=document.querySelector(".search-highlight");
+        if(node) node.scrollIntoView({ behavior:"smooth", block:"center" });
+    },300);
+}
+
+/* BUTTONS */
+const paternalBtn=document.getElementById("paternalBtn");
+const maternalBtn=document.getElementById("maternalBtn");
+const homeBtn=document.getElementById("homeBtn");
+const expandBtn=document.getElementById("expandBtnCircle");
+
+document.getElementById("homeBtn").onclick=()=>{
+    setTitle("Family Tree");
+    screen1.style.display="grid";
+    screen2.style.display="none";
+    treeDiv.style.display="none";
+    setButtonsEnabled(false);
+    expandBtn.textContent="E";
+};
+paternalBtn.onclick=()=>{ currentPersonId && showRootAncestor(currentPersonId,"father"); expandBtn.textContent="E"; };
+maternalBtn.onclick=()=>{ currentPersonId && showRootAncestor(currentPersonId,"mother"); expandBtn.textContent="E"; };
+
+function setTitle(t){ document.getElementById("title").textContent=t; }
+function setButtonsEnabled(en){ paternalBtn.disabled=maternalBtn.disabled=!en; }
+
+expandBtn.onclick = ()=>{
+    const expand = expandBtn.textContent==="E";
+    document.querySelectorAll(".children").forEach(c=>{
+        c.classList.remove("collapsed","expanded");
+        c.classList.add(expand?"expanded":"collapsed");
+    });
+    expandBtn.textContent = expand?"C":"E";
+    if(expand) scrollToHighlightedPerson();
+};
+
+/* --------------------------------------------------------------
+   SEARCH
+-------------------------------------------------------------- */
+const searchBox=document.getElementById("searchBox");
+const searchResults=document.getElementById("searchResults");
+
+document.addEventListener("click",()=>searchResults.style.display="none");
+
+searchBox.oninput = ()=>{
+    const q = searchBox.value.trim().toLowerCase();
+    searchResults.innerHTML="";
+    if(!q){ searchResults.style.display="none"; return; }
+
+    let matches = data.filter(p=>p.name.toLowerCase().includes(q));
+    matches.sort((a,b)=>a.name.localeCompare(b.name));
+
+    matches.forEach(p=>{
+        const item=document.createElement("div");
+        item.className="search-item";
+        item.textContent=p.name;
+        item.onclick = ev=>{
+            ev.stopPropagation();
+            searchResults.style.display="none";
+            searchBox.value="";
+            selectedPersonId=p.id;
+            currentPersonId=p.id;
+            showRootAncestor(p.id,"father");
+            expandBtn.textContent="E";
+        };
+        searchResults.appendChild(item);
+    });
+
+    searchResults.style.display="block";
+};
+
+
+
+/* ------------------------------------------
+   MAGNIFIER POPUP SEARCH
+--------------------------------------------- */
+const popup = document.getElementById("searchPopup");
+const sb = document.getElementById("searchBoxPopup");
+const sr = document.getElementById("searchResultsPopup");
+document.getElementById("magnifierBtn").onclick = () => {
+    popup.style.display = "flex";
+    sb.focus();
+}
+
+popup.onclick = (ev)=>{
+    if(ev.target===popup) popup.style.display="none";
+}
+
+sb.oninput = ()=>{
+    const q = sb.value.trim().toLowerCase();
+    sr.innerHTML="";
+    if(!q) return;
+
+    let matches = data.filter(p=>p.name.toLowerCase().includes(q));
+    matches.sort((a,b)=>a.name.localeCompare(b.name));
+
+    matches.forEach(p=>{
+        const item=document.createElement("div");
+        item.className="search-item";
+        item.textContent=p.name;
+        item.onclick = ()=>{
+            popup.style.display="none";
+            selectedPersonId=p.id;
+            currentPersonId=p.id;
+            showRootAncestor(p.id,"father");
+        };
+        sr.appendChild(item);
+    });
+};
+
 </script>
+
 
 </body>
 </html>
