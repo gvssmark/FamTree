@@ -1,566 +1,400 @@
 
-
-
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Family Tree</title>
-       <script src="index.js" defer></script>
-	   <link rel="manifest" href="manifest.json">
+<script src="https://gvssmark.github.io/FamTree/index.js" defer></script>
+ <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins&effect=neon|outline|emboss|shadow-multiple">
+ 
+<link rel="manifest" href="https://gvssmark.github.io/FamTree/manifest.json">
 <meta name="theme-color" content="#317EFB"/>
-
-	<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
-
-
-
+<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
 <style>
-body { font-family: Arial; font-size:small; margin:0; }
+body { font-family:Poppins,sans-serif;text-shadow:3px 3px 3px #ababab;font-size:12px; margin:0; }
 .tree-container { padding: 10px; max-width: 800px; margin: auto; }
 .node {
-    display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
-    padding: 5px; border: 1px solid #444; border-radius: 10px;
-    cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;
-    position: relative;
+display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
+padding: 5px; border: 1px solid #444; border-radius: 10px;
+cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;
+position: relative;
 }
 .children { margin-left: 2px; border-left: 1px solid #bbb; padding-left: 10px; }
 .collapsed { display:none; }
 .expanded { display:block; }
-
-.photo { 
-    width: 60px; height: 60px; object-fit: cover; border-radius: 50%; 
-    margin-right: 10px; border:1px solid black; background:#fff; 
+.photo {
+width: 60px; height: 60px; object-fit: cover; border-radius: 50%;
+margin-right: 10px; border:1px solid black; background:#fff;
 }
 .photo.clickable { cursor: pointer; }
 .text { display: flex; flex-direction: column; justify-content: center; }
 .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 800px; margin: auto; }
-
 .surname, .member {
-    cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px;
-    margin:3px; background:#f7f7f7; text-align:center;
+cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px;
+margin:3px; background:#f7f7f7; text-align:center;
 }
-
 .topbar {
-    position:fixed; top:0; left:0; right:0;
-    background:#eee; padding:10px; border-bottom:1px solid #444;
-    text-align:center; z-index:1000;
-    display:flex; flex-direction:column; align-items:center; gap:6px;
-    max-width: 800px; margin: auto;
+position:fixed; top:0; left:0; right:0;
+background:#eee; padding:10px; border-bottom:1px solid #444;
+text-align:center; z-index:1000;
+display:flex; flex-direction:column; align-items:center; gap:6px;
+max-width: 800px; margin: auto;
 }
 .title { margin:0; font-weight:bold; color:#d00; }
 .buttons { display:flex; gap:8px; flex-wrap:wrap; }
 .buttons button { padding:6px 12px; }
-
-.content { margin: 69px auto 0 auto; max-width: 800px;  }
-
+.content { margin: 122px auto 0 auto; max-width: 800px; }
 /* Generation badge */
 .gen-badge-circle {
-    position:absolute; top:5px; right:4px;
-    width:22px; height:22px; background:black; color:white;
-    border-radius:50%; display:flex; justify-content:center;
-    align-items:center; font-size:11px; font-weight:bold;
+position:absolute; top:5px; right:4px;
+width:22px; height:22px; background:black; color:white;
+border-radius:50%; display:flex; justify-content:center;
+align-items:center; font-size:11px; font-weight:bold;
 }
-
 .idno { font-size:xx-small; color:red; display:none; }
-
 /* Search dropdown */
 #searchResults {
-    position: absolute;
-    top: 105px;
-    width: 90%; max-width: 720px;
-    background: white;
-    border: 1px solid #666;
-    border-radius: 5px;
-    max-height: 250px;
-    overflow-y: auto;
-    z-index: 2000;
-    display: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,.3);
+position: absolute;
+top: 105px;
+width: 90%; max-width: 720px;
+background: white;
+border: 1px solid #666;
+border-radius: 5px;
+max-height: 250px;
+overflow-y: auto;
+z-index: 2000;
+display: none;
+box-shadow: 0 2px 6px rgba(0,0,0,.3);
 }
 .search-item {
-    padding: 8px; border-bottom: 1px solid #ddd;
-    cursor: pointer; background: #fafafa;
+padding: 8px; border-bottom: 1px solid #ddd;
+cursor: pointer; background: #fafafa;
 }
 .search-item:hover { background:#e0e0e0; }
-
 /* highlight found person */
 .search-highlight {
-    border: 3px solid orange !important;
-    box-shadow: 0 0 10px orange !important;
+border: 3px solid orange !important;
+box-shadow: 0 0 10px orange !important;
 }
-
-/* ------------------------------------------
-   BOTTOM CIRCULAR BUTTON BAR
---------------------------------------------- */
-#bottomBar {
-    position: fixed;
-    bottom: 5px;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-around;
-    padding: 5px 0;
-    z-index: 999;
-}
-
-.circle-btn {
-    width: 45px;
-    height: 45px;
-    background: #1a73e8;
-    color: white;
-    font-weight: bold;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    cursor: pointer;
-    box-shadow: 0 0 5px #555;
-}
-
-/* ------------------------------------------
-   Search Magnifier
---------------------------------------------- */
-#magnifierBtn {
-    position: fixed;
-    top: 8px;
-    right: 10px;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 900;
-}
-
-/* ------------------------------------------
-   Search Popup Window
---------------------------------------------- */
-#searchPopup {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    backdrop-filter: blur(5px);
-    background: rgba(0,0,0,0.55);
-    z-index: 1000;
-    display: none;
-    justify-content: center;
-    align-items: start;
-    padding-top: 60px;
-}
-
-#searchBoxPopup {
-    width: 80%;
-    padding: 12px;
-    font-size: 18px;
-    border-radius: 8px;
-}
-
-#searchResultsPopup {
-    background: white;
-    width: 80%;
-    max-height: 60%;
-    overflow-y: auto;
-    border-radius: 10px;
-    margin-top: 10px;
-    padding: 5px;
-}
-.search-item {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-    cursor: pointer;
-}
-.search-item:hover {
-    background: #eee;
-}
-
-
 </style>
 </head>
 <body>
-<!-- Magnifying Glass -->
-
-
-<!-- Search Popup -->
-<div id="searchPopup">
-    <div>
-        <input id="searchBoxPopup" placeholder="Search name..." autofocus />
-        <div id="searchResultsPopup"></div>
-    </div>
-</div>
-
-<!-- Bottom Circular Button Bar -->
-<div id="bottomBar">
-    <div class="circle-btn" id="paternalBtn">P</div>
-    <div class="circle-btn" id="maternalBtn">M</div>
-    <div class="circle-btn" id="homeBtn">H</div>
-    <div class="circle-btn" id="expandBtnCircle">E</div>
-</div>
-
-
-
 <div class="topbar">
-    <div class="title" id="title">Family Tree</div>
-
- 
-    <input id="searchBox" type="text" placeholder="Search name…" style="width:90%; padding:6px; font-size:16px; border:1px solid #444; border-radius:5px;">
-    <div id="searchResults"></div>
-
-    
+<div class="title" id="title">Family Tree</div>
+<div class="buttons">
+<button id="paternalBtn" disabled>Paternal</button>
+<button id="maternalBtn" disabled>Maternal</button>
+<button id="expandAllToggle" style="font-size:14px;">Expand All</button>
+<button id="homeBtn">Home</button>
 </div>
-
+<input id="searchBox" type="text" placeholder="Search name…" style="width:90%; padding:6px; font-size:16px; border:1px solid #444; border-radius:5px;">
+<div id="searchResults"></div>
+</div>
 <div id="screen1" class="two-columns content"></div>
 <div id="screen2" class="content" style="display:none;"></div>
 <div id="tree" class="tree-container content" style="display:none;"></div>
-
 <script>
 /* --------------------------------------------------------------
-   BASIC PARSE
+BASIC PARSE
 -------------------------------------------------------------- */
 const raw = gvss;
 const data = raw.slice(1).map(r=>({
-    id: Number(r[0]), name: r[1], gender: r[2],
-    father: r[3]?Number(r[3]):null,
-    mother: r[4]?Number(r[4]):null,
-    spouse: r[5]?Number(r[5]):null,
-    dob: r[6], telugu: r[7]
+id: Number(r[0]), name: r[1], gender: r[2],
+father: r[3]?Number(r[3]):null,
+mother: r[4]?Number(r[4]):null,
+spouse: r[5]?Number(r[5]):null,
+dob: r[6], telugu: r[7], photoAvailable: r[9] === 'Y'
 }));
-
 /* --------------------------------------------------------------
-   PERSON MAP + CHILDREN
+PERSON MAP + CHILDREN
 -------------------------------------------------------------- */
 const persons = {};
 data.forEach(p=>persons[p.id]={...p, children:[]});
-
 data.forEach(p=>{
-    if(p.father && persons[p.father]) persons[p.father].children.push(p.id);
-    if(p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
+if(p.father && persons[p.father]) persons[p.father].children.push(p.id);
+if(p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
 });
-
 /* --------------------------------------------------------------
-   MULTIPLE SPOUSES DETECTION
+MULTIPLE SPOUSES DETECTION
 -------------------------------------------------------------- */
 function getSpouses(id){
-    return data.filter(p=> p.spouse === id);
+return data.filter(p=> p.spouse === id);
 }
-
 /* --------------------------------------------------------------
-   IMAGE LOADER
+IMAGE LOADER
 -------------------------------------------------------------- */
 const noImageUrl='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true';
 const imgCache={};
 (function(){const img=new Image(); img.src=noImageUrl; imgCache['noimage']={status:'loaded', img};})();
-
 function loadImageById(id){
-    if(!id) return Promise.resolve(imgCache['noimage'].img);
-    const key=String(id);
-    if(imgCache[key]){
-        if(imgCache[key].status==='loaded') return Promise.resolve(imgCache[key].img);
-        return imgCache[key].promise;
-    }
-    const img=new Image();
-    const p=new Promise(res=>{
-        img.onload=()=>{ imgCache[key].status='loaded'; imgCache[key].img=img; res(img); };
-        img.onerror=()=>{ imgCache[key].status='error'; imgCache[key].img=imgCache['noimage'].img; res(imgCache['noimage'].img); };
-    });
-    imgCache[key]={status:'loading', img:null, promise:p};
-    img.src=`https://gvssmark.github.io/FamTree/photos/${id}.JPG`;
-    return p;
+if(!id) return Promise.resolve(imgCache['noimage'].img);
+const key=String(id);
+if(imgCache[key]){
+if(imgCache[key].status==='loaded') return Promise.resolve(imgCache[key].img);
+return imgCache[key].promise;
 }
-
+const img=new Image();
+const p=new Promise(res=>{
+img.onload=()=>{ imgCache[key].status='loaded'; imgCache[key].img=img; res(img); };
+img.onerror=()=>{ imgCache[key].status='error'; imgCache[key].img=imgCache['noimage'].img; res(imgCache['noimage'].img); };
+});
+imgCache[key]={status:'loading', img:null, promise:p};
+img.src=`https://gvssmark.github.io/FamTree/photos/${id}.JPG`;
+return p;
+}
 /* --------------------------------------------------------------
-   TREE NODE BUILDER
+TREE NODE BUILDER
 -------------------------------------------------------------- */
 let selectedPersonId=null;
 let currentPersonId=null;
-
 const genBadgeColors=["#000","#1a73e8","#0f9d58","#f4b400","#db4437","#673ab7","#0097a7","#5c6bc0","#795548"];
 const genNodeColors=["#f0f0f0","#e0f2ff","#e0ffe0","#fff8e0","#ffe0e0","#f3e0ff","#e0ffff","#e8eaf6","#f5f5dc"];
-
 function formatDOB(dob){
-    if(!dob) return "";
-    return new Date(dob).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+if(!dob) return "";
+return new Date(dob).toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
-
 function buildNode(person, level){
-    const wrap=document.createElement("div");
-    const node=document.createElement("div");
-    node.className="node";
-    node.style.background=genNodeColors[level]||"#f0f0f0";
-
-    const badge=document.createElement("div");
-    badge.className="gen-badge-circle";
-    badge.textContent="G"+level;
-    badge.style.background=genBadgeColors[level]||"#000";
-    node.appendChild(badge);
-
-    const photo=document.createElement("img");
-    photo.className="photo";
-    photo.src=imgCache['noimage'].img.src;
-    loadImageById(person.id).then(img=> photo.src=img.src );
-
-    const textDiv=document.createElement("div");
-    textDiv.className="text";
-
-    let nameLine=`<b>${person.name} <span class='idno'>(${person.id})</span></b>`;
-    if(person.dob) nameLine+=` (${formatDOB(person.dob)})`;
-    textDiv.innerHTML=nameLine;
-
-    node.appendChild(photo);
-    node.appendChild(textDiv);
-
-    if(person.id===selectedPersonId)
-        node.classList.add("search-highlight");
-
-    /* --------------------------------------------------------------
-       FIXED — MULTIPLE SPOUSES (NO DUPLICATES)
-    -------------------------------------------------------------- */
-
-    let spouseSet = new Map();
-
-    // reverse spouse links
-    getSpouses(person.id).forEach(s => spouseSet.set(s.id, s));
-
-    // forward spouse link
-    if (person.spouse && persons[person.spouse]) {
-        spouseSet.set(person.spouse, persons[person.spouse]);
-    }
-
-    let spouseList = Array.from(spouseSet.values());
-
-    /* SHOW SPOUSE NAMES */
-    spouseList.forEach(sp=>{
-        const spLine=document.createElement("div");
-        spLine.style.color="blue";
-        spLine.style.cursor="pointer";
-        spLine.textContent=sp.name;
-        spLine.onclick = ev=>{
-            ev.stopPropagation();
-            currentPersonId=sp.id;
-            selectedPersonId=sp.id;
-            showRootAncestor(sp.id,"father");
-        };
-        textDiv.appendChild(spLine);
-    });
-
-    /* PHOTO SLIDESHOW */
-    let slideshowIds=[person.id, ...spouseList.map(s=>s.id)];
-    let slideIndex=0;
-    setInterval(()=>{
-        loadImageById(slideshowIds[slideIndex]).then(img=> photo.src=img.src );
-        slideIndex = (slideIndex + 1) % slideshowIds.length;
-    },3000);
-
-    /* CLICK PHOTO = jump to spouse */
-    photo.classList.add("clickable");
-    photo.onclick = ev=>{
-        ev.stopPropagation();
-        if(spouseList.length>0){
-            currentPersonId = spouseList[0].id;
-            selectedPersonId = spouseList[0].id;
-            showRootAncestor(spouseList[0].id,"father");
-        }
-    };
-
-    /* CHILDREN */
-    const kids=document.createElement("div");
-    kids.className="children collapsed";
-
-    node.onclick = ev=>{
-        ev.stopPropagation();
-        kids.classList.toggle("collapsed");
-        kids.classList.toggle("expanded");
-        document.getElementById("expandAllToggle").textContent="Expand All";
-    };
-
-    persons[person.id].children.forEach(cid=>{
-        kids.appendChild(buildNode(persons[cid], level+1));
-    });
-
-    wrap.appendChild(node);
-    if(person.children.length>0) wrap.appendChild(kids);
-    return wrap;
+const wrap=document.createElement("div");
+const node=document.createElement("div");
+node.className="node";
+node.style.background=genNodeColors[level]||"#f0f0f0";
+const badge=document.createElement("div");
+badge.className="gen-badge-circle";
+badge.textContent="G"+level;
+badge.style.background=genBadgeColors[level]||"#000";
+node.appendChild(badge);
+const photo=document.createElement("img");
+photo.className="photo";
+photo.src=imgCache['noimage'].img.src;
+//loadImageById(person.id).then(img=> photo.src=img.src );
+if (person.photoAvailable) {
+  loadImageById(person.id).then(img => photo.src = img.src);
+} else {
+  photo.src = imgCache['noimage'].img.src;
 }
 
+const textDiv=document.createElement("div");
+textDiv.className="text";
+let nameLine=`<b>${person.name} <span class='idno'>(${person.id})</span></b>`;
+if(person.dob) nameLine+=` (${formatDOB(person.dob)})`;
+textDiv.innerHTML=nameLine;
+node.appendChild(photo);
+node.appendChild(textDiv);
+if(person.id===selectedPersonId)
+node.classList.add("search-highlight");
 /* --------------------------------------------------------------
-   UI SCREENS
+SPOUSE HANDLING - NEW LOGIC
+-------------------------------------------------------------- */
+let spouseSet = new Map();
+// reverse spouse links
+getSpouses(person.id).forEach(s => spouseSet.set(s.id, s));
+// forward spouse link
+if (person.spouse && persons[person.spouse]) {
+spouseSet.set(person.spouse, persons[person.spouse]);
+}
+let spouseList = Array.from(spouseSet.values());
+const hasSingleSpouse = spouseList.length === 1;
+const hasMultipleSpouses = spouseList.length > 1;
+/* SHOW SPOUSE NAMES */
+spouseList.forEach(sp=>{
+const spLine=document.createElement("div");
+spLine.style.color="blue";
+spLine.textContent=sp.name;
+if(hasMultipleSpouses) {
+// Multiple spouses: spouse name clickable
+spLine.style.cursor="pointer";
+spLine.onclick = ev=>{
+ev.stopPropagation();
+currentPersonId=sp.id;
+selectedPersonId=sp.id;
+showRootAncestor(sp.id,"father");
+};
+} else {
+// Single spouse: spouse name NOT clickable
+spLine.style.cursor="default";
+}
+textDiv.appendChild(spLine);
+});
+/* PHOTO CLICK - FIXED LOGIC: No/multiple spouses = person's tree, single spouse = spouse's tree */
+photo.classList.add("clickable");
+if (!hasMultipleSpouses) {
+  // No spouse OR single spouse: photo CLICKABLE
+  const targetId = hasSingleSpouse ? spouseList[0].id : person.id;
+  photo.onclick = ev => {
+    ev.stopPropagation();
+    currentPersonId = targetId;
+    selectedPersonId = targetId;
+    showRootAncestor(targetId, "father");
+  };
+} else {
+  // Multiple spouses: photo shows person's tree
+  photo.onclick = ev => {
+    ev.stopPropagation();
+    currentPersonId = person.id;
+    selectedPersonId = person.id;
+    showRootAncestor(person.id, "father");
+  };
+}
+/* PHOTO SLIDESHOW - FIXED: Re-attach click handler every cycle */
+let slideshowIds=[person.id, ...spouseList.map(s=>s.id)];
+let slideIndex=0;
+setInterval(()=>{
+  loadImageById(slideshowIds[slideIndex]).then(img=> {
+    photo.src=img.src;
+    // Re-attach click handler after each image change
+    if (!hasMultipleSpouses) {
+      const targetId = hasSingleSpouse ? spouseList[0].id : person.id;
+      photo.onclick = ev => {
+        ev.stopPropagation();
+        currentPersonId = targetId;
+        selectedPersonId = targetId;
+        showRootAncestor(targetId, "father");
+      };
+    } else {
+      photo.onclick = ev => {
+        ev.stopPropagation();
+        currentPersonId = person.id;
+        selectedPersonId = person.id;
+        showRootAncestor(person.id, "father");
+      };
+    }
+  });
+  slideIndex = (slideIndex + 1) % slideshowIds.length;
+},3000);
+/* CHILDREN */
+const kids=document.createElement("div");
+kids.className="children collapsed";
+node.onclick = ev=>{
+ev.stopPropagation();
+kids.classList.toggle("collapsed");
+kids.classList.toggle("expanded");
+document.getElementById("expandAllToggle").textContent="Expand All";
+};
+persons[person.id].children.forEach(cid=>{
+kids.appendChild(buildNode(persons[cid], level+1));
+});
+wrap.appendChild(node);
+if(person.children.length>0) wrap.appendChild(kids);
+return wrap;
+}
+/* --------------------------------------------------------------
+UI SCREENS
 -------------------------------------------------------------- */
 const screen1=document.getElementById("screen1");
 const screen2=document.getElementById("screen2");
 const treeDiv=document.getElementById("tree");
-
 /* SURNAME LIST */
 [...new Set(data.map(p=>p.name.split(" ")[0]))]
-    .sort()
-    .forEach(sn=>{
-        const d=document.createElement("div");
-        d.className="surname";
-        d.textContent=sn;
-        d.onclick=()=>showMembers(sn);
-        screen1.appendChild(d);
-    });
-
+.sort()
+.forEach(sn=>{
+const d=document.createElement("div");
+d.className="surname";
+d.textContent=sn;
+d.onclick=()=>showMembers(sn);
+screen1.appendChild(d);
+});
 function showMembers(surname){
-    setTitle(`Members of ${surname}`);
-    screen1.style.display="none";
-    screen2.style.display="block";
-    screen2.innerHTML="";
-
-    data
-        .filter(p=>p.name.startsWith(surname))
-        .sort((a,b)=>a.name.localeCompare(b.name))
-        .forEach(p=>{
-            const d=document.createElement("div");
-            d.className="member";
-            d.textContent=p.name;
-            d.onclick=()=>showMemberOptions(p.id);
-            screen2.appendChild(d);
-        });
-
-    setButtonsEnabled(false);
-    treeDiv.style.display="none";
+setTitle(`Members of ${surname}`);
+screen1.style.display="none";
+screen2.style.display="block";
+screen2.innerHTML="";
+data
+.filter(p=>p.name.startsWith(surname))
+.sort((a,b)=>a.name.localeCompare(b.name))
+.forEach(p=>{
+const d=document.createElement("div");
+d.className="member";
+d.textContent=p.name;
+d.onclick=()=>showMemberOptions(p.id);
+screen2.appendChild(d);
+});
+setButtonsEnabled(false);
+treeDiv.style.display="none";
 }
-
 function showMemberOptions(id){
-    currentPersonId=id;
-    selectedPersonId=id;
-    setButtonsEnabled(true);
-    showRootAncestor(id,"father");
+currentPersonId=id;
+selectedPersonId=id;
+setButtonsEnabled(true);
+showRootAncestor(id,"father");
 }
-
 function showRootAncestor(id, side){
-    selectedPersonId=id;
-    let root=persons[id];
-    while(root && root[side]) root=persons[root[side]];
-    if(!root) root=persons[id];
-
-    setTitle((side==="father"?"Paternal Tree of ":"Maternal Tree of ") + persons[id].name);
-
-    screen1.style.display="none";
-    screen2.style.display="none";
-    treeDiv.style.display="block";
-    treeDiv.innerHTML="";
-
-    treeDiv.appendChild(buildNode(root,0));
-    setButtonsEnabled(true);
-
-    scrollToHighlightedPerson();
+selectedPersonId=id;
+let root=persons[id];
+while(root && root[side]) root=persons[root[side]];
+if(!root) root=persons[id];
+setTitle((side==="father"?"Paternal Tree of ":"Maternal Tree of ") + persons[id].name);
+screen1.style.display="none";
+screen2.style.display="none";
+treeDiv.style.display="block";
+treeDiv.innerHTML="";
+treeDiv.appendChild(buildNode(root,0));
+setButtonsEnabled(true);
+scrollToHighlightedPerson();
 }
-
 function scrollToHighlightedPerson(){
-    setTimeout(()=>{
-        const node=document.querySelector(".search-highlight");
-        if(node) node.scrollIntoView({ behavior:"smooth", block:"center" });
-    },300);
+setTimeout(()=>{
+const node=document.querySelector(".search-highlight");
+if(node) node.scrollIntoView({ behavior:"smooth", block:"center" });
+},300);
 }
-
 /* BUTTONS */
 const paternalBtn=document.getElementById("paternalBtn");
 const maternalBtn=document.getElementById("maternalBtn");
-const homeBtn=document.getElementById("homeBtn");
-const expandBtn=document.getElementById("expandBtnCircle");
-
+const expandBtn = document.getElementById("expandAllToggle");
 document.getElementById("homeBtn").onclick=()=>{
-    setTitle("Family Tree");
-    screen1.style.display="grid";
-    screen2.style.display="none";
-    treeDiv.style.display="none";
-    setButtonsEnabled(false);
-    expandBtn.textContent="E";
+setTitle("Family Tree");
+screen1.style.display="grid";
+screen2.style.display="none";
+treeDiv.style.display="none";
+setButtonsEnabled(false);
+expandBtn.textContent="Expand All";
 };
-paternalBtn.onclick=()=>{ currentPersonId && showRootAncestor(currentPersonId,"father"); expandBtn.textContent="E"; };
-maternalBtn.onclick=()=>{ currentPersonId && showRootAncestor(currentPersonId,"mother"); expandBtn.textContent="E"; };
-
+paternalBtn.onclick=()=>{ currentPersonId && showRootAncestor(currentPersonId,"father"); expandBtn.textContent="Expand All"; };
+maternalBtn.onclick=()=>{ currentPersonId && showRootAncestor(currentPersonId,"mother"); expandBtn.textContent="Expand All"; };
 function setTitle(t){ document.getElementById("title").textContent=t; }
 function setButtonsEnabled(en){ paternalBtn.disabled=maternalBtn.disabled=!en; }
-
 expandBtn.onclick = ()=>{
-    const expand = expandBtn.textContent==="E";
-    document.querySelectorAll(".children").forEach(c=>{
-        c.classList.remove("collapsed","expanded");
-        c.classList.add(expand?"expanded":"collapsed");
-    });
-    expandBtn.textContent = expand?"C":"E";
-    if(expand) scrollToHighlightedPerson();
+const expand = expandBtn.textContent==="Expand All";
+document.querySelectorAll(".children").forEach(c=>{
+c.classList.remove("collapsed","expanded");
+c.classList.add(expand?"expanded":"collapsed");
+});
+expandBtn.textContent = expand?"Collapse All":"Expand All";
+if(expand) scrollToHighlightedPerson();
 };
-
 /* --------------------------------------------------------------
-   SEARCH
+SEARCH
 -------------------------------------------------------------- */
 const searchBox=document.getElementById("searchBox");
 const searchResults=document.getElementById("searchResults");
-
 document.addEventListener("click",()=>searchResults.style.display="none");
-
 searchBox.oninput = ()=>{
-    const q = searchBox.value.trim().toLowerCase();
-    searchResults.innerHTML="";
-    if(!q){ searchResults.style.display="none"; return; }
-
-    let matches = data.filter(p=>p.name.toLowerCase().includes(q));
-    matches.sort((a,b)=>a.name.localeCompare(b.name));
-
-    matches.forEach(p=>{
-        const item=document.createElement("div");
-        item.className="search-item";
-        item.textContent=p.name;
-        item.onclick = ev=>{
-            ev.stopPropagation();
-            searchResults.style.display="none";
-            searchBox.value="";
-            selectedPersonId=p.id;
-            currentPersonId=p.id;
-            showRootAncestor(p.id,"father");
-            expandBtn.textContent="E";
-        };
-        searchResults.appendChild(item);
-    });
-
-    searchResults.style.display="block";
+const q = searchBox.value.trim().toLowerCase();
+searchResults.innerHTML="";
+if(!q){ searchResults.style.display="none"; return; }
+let matches = data.filter(p=>p.name.toLowerCase().includes(q));
+matches.sort((a,b)=>a.name.localeCompare(b.name));
+matches.forEach(p=>{
+const item=document.createElement("div");
+item.className="search-item";
+item.textContent=p.name;
+item.onclick = ev=>{
+ev.stopPropagation();
+searchResults.style.display="none";
+searchBox.value="";
+selectedPersonId=p.id;
+currentPersonId=p.id;
+showRootAncestor(p.id,"father");
+expandBtn.textContent="Expand All";
 };
-
-
-
-/* ------------------------------------------
-   MAGNIFIER POPUP SEARCH
---------------------------------------------- */
-const popup = document.getElementById("searchPopup");
-const sb = document.getElementById("searchBoxPopup");
-const sr = document.getElementById("searchResultsPopup");
-document.getElementById("magnifierBtn").onclick = () => {
-    popup.style.display = "flex";
-    sb.focus();
-}
-
-popup.onclick = (ev)=>{
-    if(ev.target===popup) popup.style.display="none";
-}
-
-sb.oninput = ()=>{
-    const q = sb.value.trim().toLowerCase();
-    sr.innerHTML="";
-    if(!q) return;
-
-    let matches = data.filter(p=>p.name.toLowerCase().includes(q));
-    matches.sort((a,b)=>a.name.localeCompare(b.name));
-
-    matches.forEach(p=>{
-        const item=document.createElement("div");
-        item.className="search-item";
-        item.textContent=p.name;
-        item.onclick = ()=>{
-            popup.style.display="none";
-            selectedPersonId=p.id;
-            currentPersonId=p.id;
-            showRootAncestor(p.id,"father");
-        };
-        sr.appendChild(item);
-    });
+searchResults.appendChild(item);
+});
+searchResults.style.display="block";
 };
-
+/* --------------------------------------------------------------
+SWIPE FUNCTIONS FOR MOBILE
+-------------------------------------------------------------- */
 </script>
-
-
 </body>
 </html>
