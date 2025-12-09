@@ -365,6 +365,9 @@ searchResults.style.display="block";
 /* --------------------------------------------------------------
 SWIPE FUNCTIONS FOR MOBILE
 -------------------------------------------------------------- */
+/* --------------------------------------------------------------
+SWIPE FUNCTIONS FOR MOBILE - FIXED SCROLL CONFLICT
+-------------------------------------------------------------- */
 function isMobileDevice() {
 return /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
@@ -374,63 +377,81 @@ let touchStartX = 0;
 let touchStartY = 0;
 let touchEndX = 0;
 let touchEndY = 0;
-const minSwipeDistance = 50;
+let touchStartTime = 0;
+const minSwipeDistance = 80;  // Increased threshold
+const maxSwipeTime = 500;     // Max 0.5s for swipe
+const scrollTolerance = 20;   // Allow small scrolls
 
 document.addEventListener('touchstart', function(e){
 if(e.touches.length === 1) {
-touchStartX = e.touches[0].clientX;
-touchStartY = e.touches[0].clientY;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchStartTime = new Date().getTime();
 }
-}, false);
+}, { passive: true });
 
 document.addEventListener('touchend', function(e){
-touchEndX = e.changedTouches[0].clientX;
-touchEndY = e.changedTouches[0].clientY;
-handleSwipeGesture();
-}, false);
+if(e.changedTouches.length === 1) {
+    touchEndX = e.changedTouches[0].clientX;
+    touchEndY = e.changedTouches[0].clientY;
+    handleSwipeGesture();
+}
+}, { passive: true });
 
 function handleSwipeGesture() {
-let dx = touchEndX - touchStartX;
-let dy = touchEndY - touchStartY;
-
-if(Math.abs(dx) < minSwipeDistance && Math.abs(dy) < minSwipeDistance) return;
-
-if(Math.abs(dx) > Math.abs(dy)) {
-  // Horizontal swipe
-  if(dx > 0) {
-    // Swipe right - Maternal Tree
-    if(currentPersonId) {
-      showRootAncestor(currentPersonId,"mother");
-      expandBtn.textContent = "Expand All";
+    const deltaX = touchEndX - touchStartX;
+    const deltaY = touchEndY - touchStartY;
+    const timeDelta = new Date().getTime() - touchStartTime;
+    
+    // Ignore if too slow, too short, or primarily scrolling
+    if(timeDelta > maxSwipeTime || 
+       Math.abs(deltaX) < minSwipeDistance || 
+       Math.abs(deltaY) < scrollTolerance) {
+        return;
     }
-  } else {
-    // Swipe left - Paternal Tree
-    if(currentPersonId) {
-      showRootAncestor(currentPersonId,"father");
-      expandBtn.textContent = "Expand All";
+    
+    // Determine primary direction
+    if(Math.abs(deltaX) > Math.abs(deltaY)) {
+        // Horizontal swipe (only if clearly horizontal)
+        if(Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaY) < scrollTolerance) {
+            if(deltaX > 0) {
+                // Swipe RIGHT - Maternal Tree
+                if(currentPersonId) {
+                    showRootAncestor(currentPersonId, "mother");
+                    expandBtn.textContent = "Expand All";
+                }
+            } else {
+                // Swipe LEFT - Paternal Tree  
+                if(currentPersonId) {
+                    showRootAncestor(currentPersonId, "father");
+                    expandBtn.textContent = "Expand All";
+                }
+            }
+        }
+    } else {
+        // Vertical swipe (only if clearly vertical)
+        if(Math.abs(deltaY) > minSwipeDistance && Math.abs(deltaX) < scrollTolerance) {
+            if(deltaY < 0) {
+                // Swipe UP - Collapse All
+                document.querySelectorAll(".children").forEach(c=>{
+                    c.classList.remove("expanded");
+                    c.classList.add("collapsed");
+                });
+                expandBtn.textContent = "Expand All";
+            } else {
+                // Swipe DOWN - Expand All
+                document.querySelectorAll(".children").forEach(c=>{
+                    c.classList.remove("collapsed");
+                    c.classList.add("expanded");
+                });
+                expandBtn.textContent = "Collapse All";
+                scrollToHighlightedPerson();
+            }
+        }
     }
-  }
-} else {
-  // Vertical swipe
-  if(dy < 0) {
-    // Swipe up - Collapse All
-    document.querySelectorAll(".children").forEach(c=>{
-      c.classList.remove("expanded");
-      c.classList.add("collapsed");
-    });
-    expandBtn.textContent = "Expand All";
-  } else {
-    // Swipe down - Expand All
-    document.querySelectorAll(".children").forEach(c=>{
-      c.classList.remove("collapsed");
-      c.classList.add("expanded");
-    });
-    expandBtn.textContent = "Collapse All";
-    scrollToHighlightedPerson();
-  }
 }
 }
-}
+
 </script>
 </body>
 </html>
