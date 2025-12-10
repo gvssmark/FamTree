@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -265,6 +266,7 @@ function buildNode(person, level){
       currentPersonId = targetId;
       selectedPersonId = targetId;
       showRootAncestor(targetId, "father");
+      expandBtn.textContent="Expand All";
     };
   } else {
     photo.onclick = ev => {
@@ -272,6 +274,7 @@ function buildNode(person, level){
       currentPersonId = person.id;
       selectedPersonId = person.id;
       showRootAncestor(person.id, "father");
+      
     };
   }
   
@@ -294,6 +297,8 @@ function buildNode(person, level){
             currentPersonId = targetId;
             selectedPersonId = targetId;
             showRootAncestor(targetId, "father");
+            
+            expandBtn.textContent="Expand All";
           };
         } else {
           photo.onclick = ev => {
@@ -301,6 +306,8 @@ function buildNode(person, level){
             currentPersonId = person.id;
             selectedPersonId = person.id;
             showRootAncestor(person.id, "father");
+            
+            //expandBtn.textContent="Expand All";
           };
         }
       });
