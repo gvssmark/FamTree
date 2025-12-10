@@ -85,7 +85,7 @@ box-shadow: 0 0 10px orange !important;
 <div class="buttons">
 <button id="paternalBtn" disabled>Paternal</button>
 <button id="maternalBtn" disabled>Maternal</button>
-<button id="expandAllToggle" style="font-size:14px;">Expand All</button>
+<button id="expandAllToggle" disabled style="font-size:14px;">Expand All</button>
 <button id="homeBtn">Home</button>
 </div>
 <input id="searchBox" type="text" placeholder="Search name…" style="width:90%; padding:6px; font-size:16px; border:1px solid #444; border-radius:5px;">
@@ -420,7 +420,7 @@ paternalBtn.onclick=()=>{ currentPersonId && showRootAncestor(currentPersonId,"f
 maternalBtn.onclick=()=>{ currentPersonId && showRootAncestor(currentPersonId,"mother"); expandBtn.textContent="Expand All"; };
 
 function setTitle(t){ document.getElementById("title").textContent=t; }
-function setButtonsEnabled(en){ paternalBtn.disabled=maternalBtn.disabled=!en; }
+function setButtonsEnabled(en){ paternalBtn.disabled=maternalBtn.disabled=expandBtn.disabled=!en; }
 
 expandBtn.onclick = ()=>{
   const expand = expandBtn.textContent==="Expand All";
