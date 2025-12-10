@@ -105,7 +105,10 @@ father: r[3]?Number(r[3]):null,
 mother: r[4]?Number(r[4]):null,
 spouse: r[5]?Number(r[5]):null,
 dob: r[6],  photoAvailable: r[7] === 'Y'
-}))
+}));
+
+console.log(raw[1])
+console.log(gvss[1])
 /* --------------------------------------------------------------
 PERSON MAP + CHILDREN
 -------------------------------------------------------------- */
@@ -125,7 +128,7 @@ return data.filter(p=> p.spouse === id);
 IMAGE LOADER
 -------------------------------------------------------------- */
 const noImageUrl='https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true';
-const imgCache={};
+ imgCache={};
 (function(){const img=new Image(); img.src=noImageUrl; imgCache['noimage']={status:'loaded', img};})();
 function loadImageById(id){
 if(!id) return Promise.resolve(imgCache['noimage'].img);
@@ -237,31 +240,23 @@ if (!hasMultipleSpouses) {
   };
 }
 /* PHOTO SLIDESHOW - FIXED: Re-attach click handler every cycle */
-let slideshowIds=[person.id, ...spouseList.map(s=>s.id)];
-let slideIndex=0;
-setInterval(()=>{
-  loadImageById(slideshowIds[slideIndex]).then(img=> {
-    photo.src=img.src;
-    // Re-attach click handler after each image change
-    if (!hasMultipleSpouses) {
-      const targetId = hasSingleSpouse ? spouseList[0].id : person.id;
-      photo.onclick = ev => {
-        ev.stopPropagation();
-        currentPersonId = targetId;
-        selectedPersonId = targetId;
-        showRootAncestor(targetId, "father");
-      };
-    } else {
-      photo.onclick = ev => {
-        ev.stopPropagation();
-        currentPersonId = person.id;
-        selectedPersonId = person.id;
-        showRootAncestor(person.id, "father");
-      };
-    }
-  });
-  slideIndex = (slideIndex + 1) % slideshowIds.length;
-},3000);
+/* PHOTO SLIDESHOW - FIXED: Only include photo-available people */
+let slideshowIds = [person.id, ...spouseList.map(s=>s.id)].filter(id => {
+  const personData = persons[id];
+  return personData && personData.photoAvailable === true;  // Only 'Y' photos
+});
+
+if (slideshowIds.length > 1) {  // Only run slideshow if multiple photos
+  let slideIndex = 0;
+  setInterval(() => {
+    loadImageById(slideshowIds[slideIndex]).then(img => {
+      photo.src = img.src;
+      // Re-attach click handlers here if needed
+    });
+    slideIndex = (slideIndex + 1) % slideshowIds.length;
+  }, 3000);
+}
+
 /* CHILDREN */
 const kids=document.createElement("div");
 kids.className="children collapsed";
