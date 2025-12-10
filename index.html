@@ -217,7 +217,7 @@ function buildNode(person, level){
   const textDiv=document.createElement("div");
   textDiv.className="text";
   let nameLine=`<b>${person.name} <span class='idno'>(${person.id})</span></b>`;
-  if(person.dob) nameLine+=` (${formatDOB(person.dob)})`;
+  //if(person.dob) nameLine+=` (${formatDOB(person.dob)})`;
   textDiv.innerHTML=nameLine;
   
   node.appendChild(photo);
