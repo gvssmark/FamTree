@@ -109,10 +109,14 @@ function preloadPhoto(id) {
     const genColors = ["#cce6ff","#d5f5d5","#fff4b3","#ffd6e7","#e0e0e0"];
 
     function formatDOB(dob) {
-        if (!dob) return "";
-        const date = new Date(dob);
-        return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    }
+  if (!dob) return "";
+  const date = new Date(dob);
+  return date.toLocaleDateString("en-IN", {
+    month: "short",
+    day: "numeric",
+    timeZone: "Asia/Kolkata"
+  });
+}
 
     function buildNode(person, level) {
     const wrap = document.createElement("div");
