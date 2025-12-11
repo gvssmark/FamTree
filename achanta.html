@@ -194,9 +194,16 @@ function preloadPhoto(id) {
 function writeToLog(){
 spreadsheetId='1sR5CCMYR7CfopjxCWd4bq9MSIHkAzin74ugmxJ9nel8'
 sheetName= 'visits';
-date=new Date().toLocaleString()
+var today = new Date();  
+var localoffset = -(today.getTimezoneOffset()/60);
+var destoffset = -4;
+
+var offset = destoffset-localoffset;
+var d = new Date( new Date().getTime() + offset * 3600 * 1000)
+////alert(d);
+
 formData = new FormData();
-formData.append('date', date);
+formData.append('date', d);
   formData.append('spreadsheetId', spreadsheetId);
     formData.append('sheetName', sheetName);
 fetch("https://script.google.com/macros/s/AKfycbytzFhmFLKbTpwiMhtvPUGyi26GTFg2i9cIPkbLQKrEfRd4Mb-ezKptfrf7nm-fSzUM/exec",{body: formData,method: "post"});}
