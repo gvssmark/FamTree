@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,52 +5,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Family Tree</title>
 <script src="https://gvssmark.github.io/FamTree/index.js" defer></script>
-
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins&effect=neon|outline|emboss|shadow-multiple">
-
 <link rel="manifest" href="https://gvssmark.github.io/FamTree/manifest.json">
 <meta name="theme-color" content="#317EFB"/>
 <script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
 <style>
 #langToggle {position: fixed;top: 5px;right: 3px;width: 34px;height: 34px;border-radius: 50%;color: white;font-weight: bold;display: flex;font-size: large;align-items: center;justify-content: center;cursor: pointer;z-index: 3000;box-shadow: 0 0 6px rgba(0,0,0,.4);}
-body {  font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;  text-shadow:3px 3px 3px #ababab;  font-size:13px;  margin:0;}
+body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-shadow:3px 3px 3px #ababab; font-size:13px; margin:0;}
 .tree-container { padding: 10px; max-width: 800px; margin: auto; }
-.node {  display: flex; flex-direction: row; align-items: center; justify-content: flex-start;  padding: 5px; border: 1px solid #444; border-radius: 10px;  cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;  position: relative;}
+.node { display: flex; flex-direction: row; align-items: center; justify-content: flex-start; padding: 5px; border: 1px solid #444; border-radius: 10px; cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px; position: relative;}
 .children { margin-left: 2px; border-left: 1px solid #bbb; padding-left: 10px; }
 .collapsed { display:none; }
 .expanded { display:block; }
-.photo {  width: 60px; height: 60px; object-fit: cover; border-radius: 50%;  margin-right: 10px; border:1px solid black; background:#fff;}
+.photo { width: 60px; height: 60px; object-fit: cover; border-radius: 50%; margin-right: 10px; border:1px solid black; background:#fff;}
 .photo.clickable { cursor: pointer; }
 .text { display: flex; flex-direction: column; justify-content: center; }
 .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 800px; margin: auto; }
-.surname, .member {  cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px;  margin:3px; background:#f7f7f7; text-align:center;}
-.topbar {  position:fixed; top:0; left:0; right:0;  background:#eee; padding:10px; border-bottom:1px solid #444;  text-align:center; z-index:1000;  display:flex; flex-direction:column; align-items:center; gap:6px;  max-width: 800px; margin: auto;}
+.surname, .member { cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px; margin:3px; background:#f7f7f7; text-align:center;}
+.topbar { position:fixed; top:0; left:0; right:0; background:#eee; padding:10px; border-bottom:1px solid #444; text-align:center; z-index:1000; display:flex; flex-direction:column; align-items:center; gap:6px; max-width: 800px; margin: auto;}
 .title { margin:0; font-weight:bold; color:#d00; }
-.buttons { display:flex; gap:8px; flex-wrap:wrap; }
+.buttons { display:flex; gap:8px; flex-wrap:wrap; font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;  }
 .buttons button { padding:6px 12px; }
-.content { margin: 122px auto 0 auto; max-width: 800px; }
-
+.content { margin: 136px auto 0 auto; max-width: 800px; }
 /* INTRO SCREEN */
-#screen0 {  max-width: 800px; margin: -28px auto 0 auto; padding: 20px; text-align: left;  font-size: 14px; line-height: 1.6;}
-#screen0 h1 {  text-align: center; color: #d00; font-size: 2.5em; margin-bottom: 30px;  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);}
-#screen0 ul {  list-style: none; padding-left: 0; margin-bottom: 30px;}
-#screen0 li {  margin-bottom: 12px; padding: 5px; background: #f8f9fa;  border-left: 4px solid #d00; padding-left: 5px;  border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
+#screen0 { max-width: 800px; margin: -28px auto 0 auto; padding: 20px; text-align: left; font-size: 14px; line-height: 1.6;}
+#screen0 h1 { text-align: center; color: #d00; font-size: 2.5em; margin-bottom: 30px; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);}
+#screen0 ul { list-style: none; padding-left: 0; margin-bottom: 30px;}
+#screen0 li { margin-bottom: 12px; padding: 5px; background: #f8f9fa; border-left: 4px solid #d00; padding-left: 5px; border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
 #screen0 b { color: #d00; }
-.continue-btn {  background: #d00 !important; width:150px; height:30px; color:white; margin: auto;  outline: none; display: flex; align-items: center; justify-content: center;  font-size: x-large; border-radius: 25px; padding: 10px; cursor: pointer;  transition: all 0.3s ease; border: none; font-weight: bold;}
-.continue-btn:hover {  transform: translateY(-2px); box-shadow: 0 4px 12px rgba(208,0,0,0.4);}
-
+.continue-btn { background: #d00 !important; width:150px; height:30px; color:white; margin: auto; outline: none; display: flex; align-items: center; justify-content: center; font-size: x-large; border-radius: 25px; padding: 10px; cursor: pointer; transition: all 0.3s ease; border: none; font-weight: bold;}
+.continue-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(208,0,0,0.4);}
 /* Generation badge */
-.gen-badge-circle {  position:absolute; top:5px; right:4px;  width:22px; height:22px; background:black; color:white;  border-radius:50%; display:flex; justify-content:center;  align-items:center; font-size:11px; font-weight:bold;}
+.gen-badge-circle { position:absolute; top:5px; right:4px; width:22px; height:22px; background:black; color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:11px; font-weight:bold;}
 .idno { font-size:xx-small; color:red; display:none; }
-
 /* Search dropdown */
-#searchResults {  position: absolute;  top: 105px;  width: 90%; max-width: 720px;  background: white;  border: 1px solid #666;  border-radius: 5px;  max-height: 250px;  overflow-y: auto;  z-index: 2000;  display: none;  box-shadow: 0 2px 6px rgba(0,0,0,.3);}
-.search-item {  padding: 8px; border-bottom: 1px solid #ddd;  cursor: pointer; background: #fafafa;}
+#searchResults { position: absolute; top: 105px; width: 90%; max-width: 720px; background: white; border: 1px solid #666; border-radius: 5px; max-height: 250px; overflow-y: auto; z-index: 2000; display: none; box-shadow: 0 2px 6px rgba(0,0,0,.3);}
+.search-item { padding: 8px; border-bottom: 1px solid #ddd; cursor: pointer; background: #fafafa;}
 .search-item:hover { background:#e0e0e0; }
-
 /* highlight found person */
-.search-highlight {  border: 3px solid orange !important;  box-shadow: 0 0 10px orange !important;}
+.search-highlight { border: 3px solid orange !important; box-shadow: 0 0 10px orange !important;}
+.buttons {  display:flex;  gap:4px;  flex-wrap:wrap;  font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;}
+.buttons button {  padding:6px 6px;  font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;}
 </style>
 </head>
 <body>
@@ -62,15 +57,27 @@ body {  font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;  text-s
 <div id="screen0">
   <h1>Family Tree</h1>
   <ul>
-    <li>This data is having <b><span id="arraycount"></span></b> persons. You may be one among them</li>
-    <li>Click on a <b>Surname</b> will list all persons with that surname. Click on a <b>NAME</b> from the list will show the available Paternal root of that person.</li>
-    <li>Click on <b>Maternal button</b> will show the available Maternal root of that person.</li>
-    <li>Click on <b>Expand All button</b> will expand the full family tree and will scroll to that person.</li>
-    <li>Click on <b>Collapse All button</b> will collapse the entire tree.</li>
-    <li>Click on a <b>Person</b> will expand that generation siblings. This is a toggle switch <b>(Expand / Collapse)</b>. You can deep dive in the tree.</li>
-    <li>Click on the <b>Photo</b> will switch to that person's spouse tree (if having spouse) / that person's tree</li>
-    <li>Click on <b>Home</b> will take you to Surnames list.</li>
-    <li>For persons having <b>more than one spouse</b>, click on the <b>spouse name</b> will switch the tree.</li>
+    <!-- English intro lines -->
+    <li class="li-en" style="display:none;">This data is having <b><span id="arraycount"></span></b> persons. You may be one among them</li>
+    <li class="li-en" style="display:none;">Click on a <b>Surname</b> will list all persons with that surname. Click on a <b>NAME</b> from the list will show the available Paternal root of that person.</li>
+    <li class="li-en" style="display:none;">Click on <b>Maternal button</b> will show the available Maternal root of that person.</li>
+    <li class="li-en" style="display:none;">Click on <b>Expand All button</b> will expand the full family tree and will scroll to that person.</li>
+    <li class="li-en" style="display:none;">Click on <b>Collapse All button</b> will collapse the entire tree.</li>
+    <li class="li-en" style="display:none;">Click on a <b>Person</b> will expand that generation siblings. This is a toggle switch <b>(Expand / Collapse)</b>. You can deep dive in the tree.</li>
+    <li class="li-en" style="display:none;">Click on the <b>Photo</b> will switch to that person's spouse tree (if having spouse) / that person's tree</li>
+    <li class="li-en" style="display:none;">Click on <b>Home</b> will take you to Surnames list.</li>
+    <li class="li-en" style="display:none;">For persons having <b>more than one spouse</b>, click on the <b>spouse name</b> will switch the tree.</li>
+
+    <!-- Telugu intro lines -->
+    <li class="li-te">ఈ డేటాలో <b><span id="arraycount"></span></b> మంది ఉన్నారు. వారిలో మీరు ఒకరు కావచ్చు</li>
+    <li class="li-te"><b>ఇంటి పేరు</b> పై క్లిక్ చేస్తే ఆ ఇంటి పేరు ఉన్న వారందరూ కనిపిస్తారు. ఆ జాబితాలోని <b>పేరు</b> పై క్లిక్ చేస్తే వారి పితృ వంశ వృక్షం చూపబడుతుంది.</li>
+    <li class="li-te"><b>మాతృ</b> బటన్ పై క్లిక్ చేస్తే వారి మాతృ వంశ వృక్షం చూపబడుతుంది.</li>
+    <li class="li-te"><b>Expand All</b> బటన్ పై క్లిక్ చేస్తే మొత్తం కుటుంబ వృక్షం విస్తరించబడుతుంది.</li>
+    <li class="li-te"><b>Collapse All</b> బటన్ పై క్లిక్ చేస్తే మొత్తం వృక్షం మూసివేయబడుతుంది.</li>
+    <li class="li-te"><b>వ్యక్తి</b> పై క్లిక్ చేస్తే ఆ తరం సహోదరులు విస్తరించి కనిపిస్తారు. మళ్లీ క్లిక్ చేస్తే మూసివేయబడుతుంది.</li>
+    <li class="li-te"><b>ఫోటో</b> పై క్లిక్ చేస్తే ఆ వ్యక్తి / జీవిత భాగస్వామి వృక్షం మారుతుంది (ఉంటే).</li>
+    <li class="li-te"><b>Home</b> పై క్లిక్ చేస్తే మళ్లీ ఇంటి పేర్ల జాబితాకు వెళ్తారు.</li>
+    <li class="li-te">ఒకరికంటే ఎక్కువ జీవిత భాగస్వాములు ఉన్నవారి కోసం, <b>spouse name</b> పై క్లిక్ చేస్తే వృక్షం మారుతుంది.</li>
   </ul>
   <div class="continue-btn" id="continueBtn">Continue</div>
   <br>
@@ -93,7 +100,27 @@ body {  font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;  text-s
 <div id="tree" class="tree-container content" style="display: none;"></div>
 
 <script>
-let selectedLanguage = "te";   // default language
+let selectedLanguage = "te"; // default language
+
+const uiText = {
+  en: {
+    paternal: "Paternal",
+    maternal: "Maternal",
+    expand:   "Expand",
+    collapse: "Collapse",
+    home:     "Home",
+    title:    "Family Tree"
+  },
+  te: {
+    paternal: "పితృ వంశం",
+    maternal: "మాతృ వంశం",
+    expand:   "విస్తరించు",
+    collapse: "మూసివేయి",
+    home:     "హోమ్",
+    title:    "కుటుంబ వృక్షం"
+  }
+};
+
 document.getElementById('arraycount').textContent = gvss.length;
 
 // globals
@@ -103,13 +130,45 @@ let selectedPersonId = null;
 let currentPersonId = null;
 
 // DOM references
-const screen1     = document.getElementById("screen1");
-const screen2     = document.getElementById("screen2");
-const treeDiv     = document.getElementById("tree");
+const screen1 = document.getElementById("screen1");
+const screen2 = document.getElementById("screen2");
+const treeDiv = document.getElementById("tree");
 const paternalBtn = document.getElementById("paternalBtn");
 const maternalBtn = document.getElementById("maternalBtn");
-const expandBtn   = document.getElementById("expandAllToggle");
-const langToggle  = document.getElementById("langToggle");
+const expandBtn = document.getElementById("expandAllToggle");
+const langToggle = document.getElementById("langToggle");
+
+/* INTRO LANGUAGE TOGGLE */
+function updateIntroLanguage() {
+  const showTelugu = (selectedLanguage === "te");
+  document.querySelectorAll('.li-en').forEach(el => {
+    el.style.display = showTelugu ? 'none' : 'list-item';
+  });
+  document.querySelectorAll('.li-te').forEach(el => {
+    el.style.display = showTelugu ? 'list-item' : 'none';
+  });
+}
+
+/* BUTTON LABELS */
+function updateUIButtonLabels() {
+  const t = uiText[selectedLanguage];
+
+  paternalBtn.textContent = t.paternal;
+  maternalBtn.textContent = t.maternal;
+
+  const isExpandState =
+    (expandBtn.textContent === uiText.en.expand) ||
+    (expandBtn.textContent === uiText.te.expand);
+  expandBtn.textContent = isExpandState ? t.expand : t.collapse;
+
+  document.getElementById("homeBtn").textContent = t.home;
+
+  const titleEl = document.getElementById("title");
+  if (titleEl.textContent === uiText.en.title ||
+      titleEl.textContent === uiText.te.title) {
+    titleEl.textContent = t.title;
+  }
+}
 
 /* PHOTO AVAILABILITY */
 async function getPhotoAvailability() {
@@ -129,7 +188,6 @@ async function getPhotoAvailability() {
 /* INITIALIZE DATA (LANGUAGE-AWARE, UI-agnostic) */
 async function initializeData() {
   const photoSet = await getPhotoAvailability();
-
   data = gvss.slice(1).map(r => ({
     id: Number(r[0]),
     name: selectedLanguage === "en" ? r[1] : r[9],
@@ -141,14 +199,12 @@ async function initializeData() {
     telugu: r[9],
     photoAvailable: photoSet.has(Number(r[0]))
   }));
-
   persons = {};
   data.forEach(p => persons[p.id] = { ...p, children: [] });
   data.forEach(p => {
     if (p.father && persons[p.father]) persons[p.father].children.push(p.id);
     if (p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
   });
-
   document.getElementById('arraycount').textContent = data.length;
   setTitle(`Family Tree (${photoSet.size} photos loaded)`);
 }
@@ -166,7 +222,6 @@ const imgCache = {};
   img.src = noImageUrl;
   imgCache['noimage'] = { status:'loaded', img };
 })();
-
 function loadImageById(id) {
   if (!id) return Promise.resolve(imgCache['noimage'].img);
   const key = String(id);
@@ -194,13 +249,11 @@ function loadImageById(id) {
 
 /* TREE NODE BUILDER */
 const genBadgeColors = ["#000","#1a73e8","#0f9d58","#f4b400","#db4437","#673ab7","#0097a7","#5c6bc0","#795548"];
-const genNodeColors  = ["#f0f0f0","#e0f2ff","#e0ffe0","#fff8e0","#ffe0e0","#f3e0ff","#e0ffff","#e8eaf6","#f5f5dc"];
-
+const genNodeColors = ["#f0f0f0","#e0f2ff","#e0ffe0","#fff8e0","#ffe0e0","#f3e0ff","#e0ffff","#e8eaf6","#f5f5dc"];
 function formatDOB(dob) {
   if (!dob) return "";
   return new Date(dob).toLocaleDateString("en-US",{month:"short",day:"numeric"});
 }
-
 function buildNode(person, level) {
   const wrap = document.createElement("div");
   const node = document.createElement("div");
@@ -216,7 +269,6 @@ function buildNode(person, level) {
   const photo = document.createElement("img");
   photo.className = "photo";
   photo.src = imgCache['noimage'].img.src;
-
   if (person.photoAvailable) {
     loadImageById(person.id).then(img => photo.src = img.src);
   }
@@ -269,7 +321,7 @@ function buildNode(person, level) {
       currentPersonId = targetId;
       selectedPersonId = targetId;
       showRootAncestor(targetId, "father");
-      expandBtn.textContent = "Expand";
+      expandBtn.textContent = uiText[selectedLanguage].expand;
     };
   } else {
     photo.onclick = ev => {
@@ -297,7 +349,7 @@ function buildNode(person, level) {
             currentPersonId = targetId;
             selectedPersonId = targetId;
             showRootAncestor(targetId, "father");
-            expandBtn.textContent = "Expand";
+            expandBtn.textContent = uiText[selectedLanguage].expand;
           };
         } else {
           photo.onclick = ev => {
@@ -319,7 +371,7 @@ function buildNode(person, level) {
     ev.stopPropagation();
     kids.classList.toggle("collapsed");
     kids.classList.toggle("expanded");
-    expandBtn.textContent = "Expand";
+    expandBtn.textContent = uiText[selectedLanguage].expand;
   };
   persons[person.id].children.forEach(cid => {
     kids.appendChild(buildNode(persons[cid], level + 1));
@@ -332,13 +384,11 @@ function buildNode(person, level) {
 /* UI SCREENS */
 function initializeUI() {
   screen1.innerHTML = "";
-
   const surnames = new Set();
   data.forEach(p => {
     const parts = (p.name || "").trim().split(/\s+/);
     if (parts[0]) surnames.add(parts[0]);
   });
-
   [...surnames].sort().forEach(sn => {
     const d = document.createElement("div");
     d.className = "surname";
@@ -346,10 +396,8 @@ function initializeUI() {
     d.onclick = () => showMembers(sn);
     screen1.appendChild(d);
   });
-
   window.scrollTo(0, 0);
 }
-
 function showMembers(surname) {
   setTitle(`Members of ${surname}`);
   screen1.style.display = "none";
@@ -369,14 +417,12 @@ function showMembers(surname) {
   treeDiv.style.display = "none";
   window.scrollTo(0, 0);
 }
-
 function showMemberOptions(id) {
   currentPersonId = id;
   selectedPersonId = id;
   setButtonsEnabled(true);
   showRootAncestor(id, "father");
 }
-
 function showRootAncestor(id, side) {
   selectedPersonId = id;
   let root = persons[id];
@@ -391,7 +437,6 @@ function showRootAncestor(id, side) {
   setButtonsEnabled(true);
   scrollToHighlightedPerson();
 }
-
 function scrollToHighlightedPerson() {
   setTimeout(() => {
     const node = document.querySelector(".search-highlight");
@@ -403,52 +448,48 @@ function scrollToHighlightedPerson() {
 function setTitle(t){ document.getElementById("title").textContent = t; }
 function setButtonsEnabled(en){
   paternalBtn.disabled = maternalBtn.disabled = expandBtn.disabled = !en;
+  updateUIButtonLabels();
 }
-
 function resetScreensOnLanguageChange() {
   screen1.innerHTML = "";
   screen2.innerHTML = "";
-
   screen1.style.display = "grid";
   screen2.style.display = "none";
   treeDiv.style.display = "none";
-
   setButtonsEnabled(false);
-  expandBtn.textContent = "Expand";
-  setTitle("Family Tree");
-
+  expandBtn.textContent = uiText[selectedLanguage].expand;
+  setTitle(uiText[selectedLanguage].title);
   selectedPersonId = null;
-  currentPersonId  = null;
+  currentPersonId = null;
   window.scrollTo(0, 0);
 }
 
 /* BUTTONS */
 document.getElementById("homeBtn").onclick = () => {
-  setTitle("Family Tree");
+  setTitle(uiText[selectedLanguage].title);
   screen1.style.display = "grid";
   screen2.style.display = "none";
   treeDiv.style.display = "none";
   setButtonsEnabled(false);
-  expandBtn.textContent = "Expand";
-  initializeUI();  // rebuild surnames in current language
+  expandBtn.textContent = uiText[selectedLanguage].expand;
+  initializeUI(); // rebuild surnames in current language
 };
-
 paternalBtn.onclick = () => {
   if (currentPersonId) showRootAncestor(currentPersonId, "father");
-  expandBtn.textContent = "Expand";
+  expandBtn.textContent = uiText[selectedLanguage].expand;
 };
 maternalBtn.onclick = () => {
   if (currentPersonId) showRootAncestor(currentPersonId, "mother");
-  expandBtn.textContent = "Expand";
+  expandBtn.textContent = uiText[selectedLanguage].expand;
 };
-
 expandBtn.onclick = () => {
-  const expand = expandBtn.textContent === "Expand";
+  const t = uiText[selectedLanguage];
+  const expand = expandBtn.textContent === t.expand;
   document.querySelectorAll(".children").forEach(c => {
     c.classList.remove("collapsed","expanded");
     c.classList.add(expand ? "expanded" : "collapsed");
   });
-  expandBtn.textContent = expand ? "Collapse" : "Expand";
+  expandBtn.textContent = expand ? t.collapse : t.expand;
   if (expand) scrollToHighlightedPerson();
 };
 
@@ -456,7 +497,6 @@ expandBtn.onclick = () => {
 const searchBox = document.getElementById("searchBox");
 const searchResults = document.getElementById("searchResults");
 document.addEventListener("click", () => searchResults.style.display = "none");
-
 searchBox.oninput = () => {
   const q = searchBox.value.trim().toLowerCase();
   searchResults.innerHTML = "";
@@ -474,7 +514,7 @@ searchBox.oninput = () => {
       selectedPersonId = p.id;
       currentPersonId = p.id;
       showRootAncestor(p.id, "father");
-      expandBtn.textContent = "Expand";
+      expandBtn.textContent = uiText[selectedLanguage].expand;
     };
     searchResults.appendChild(item);
   });
@@ -485,14 +525,15 @@ searchBox.oninput = () => {
 document.getElementById('continueBtn').onclick = async function() {
   document.getElementById('screen0').style.display = 'none';
   document.querySelector('.topbar').style.display = 'flex';
-  setTitle("Family Tree");
+  setTitle(uiText[selectedLanguage].title);
   screen1.style.display = "grid";
   screen2.style.display = "none";
   treeDiv.style.display = "none";
   setButtonsEnabled(false);
-  expandBtn.textContent = "Expand";
+  expandBtn.textContent = uiText[selectedLanguage].expand;
   await initializeData();
   initializeUI();
+  updateUIButtonLabels();
 };
 
 /* LANGUAGE TOGGLE */
@@ -507,10 +548,11 @@ langToggle.onclick = async function () {
     this.textContent = "E";
   }
 
-  const introVisible = document.getElementById('screen0').style.display !== 'none';
+  updateIntroLanguage();
+  updateUIButtonLabels();
 
+  const introVisible = document.getElementById('screen0').style.display !== 'none';
   if (introVisible) {
-    // Only update in-memory data; keep user on intro
     await initializeData();
     return;
   }
@@ -522,8 +564,12 @@ langToggle.onclick = async function () {
   } else {
     resetScreensOnLanguageChange();
     initializeUI();
+    updateUIButtonLabels();
   }
 };
+
+/* initial intro language setup */
+updateIntroLanguage();
 </script>
 </body>
 </html>
