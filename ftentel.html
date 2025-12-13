@@ -13,130 +13,49 @@
 <meta name="theme-color" content="#317EFB"/>
 <script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
 <style>
-#langToggle {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 25px;
-    height: 25px;
-    border-radius: 50%;
-    background: #d00;
-    color: white;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    z-index: 3000;
-    box-shadow: 0 0 6px rgba(0,0,0,.4);
-}
-
-body {
-  font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;
-  text-shadow:3px 3px 3px #ababab;
-  font-size:13px;
-  margin:0;
-}
+#langToggle {    position: fixed;    top: 5px;    left: 3px;    width: 30px;    height: 30px;    border-radius: 50%;    color: white;    font-weight: bold;    display: flex;    font-size: large;    align-items: center;    justify-content: center;    cursor: pointer;    z-index: 3000;     box-shadow: 0 0 6px rgba(0,0,0,.4);}
+body {  font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;  text-shadow:3px 3px 3px #ababab;  font-size:13px;  margin:0;}
 .tree-container { padding: 10px; max-width: 800px; margin: auto; }
-.node {
-  display: flex; flex-direction: row; align-items: center; justify-content: flex-start;
-  padding: 5px; border: 1px solid #444; border-radius: 10px;
-  cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;
-  position: relative;
-}
+.node {  display: flex; flex-direction: row; align-items: center; justify-content: flex-start;  padding: 5px; border: 1px solid #444; border-radius: 10px;  cursor: pointer; margin: 5px; text-align: left; transition: 0.2s; min-width: 220px;  position: relative;}
 .children { margin-left: 2px; border-left: 1px solid #bbb; padding-left: 10px; }
 .collapsed { display:none; }
 .expanded { display:block; }
-.photo {
-  width: 60px; height: 60px; object-fit: cover; border-radius: 50%;
-  margin-right: 10px; border:1px solid black; background:#fff;
-}
+.photo {  width: 60px; height: 60px; object-fit: cover; border-radius: 50%;  margin-right: 10px; border:1px solid black; background:#fff;}
 .photo.clickable { cursor: pointer; }
 .text { display: flex; flex-direction: column; justify-content: center; }
 .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; max-width: 800px; margin: auto; }
-.surname, .member {
-  cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px;
-  margin:3px; background:#f7f7f7; text-align:center;
-}
-.topbar {
-  position:fixed; top:0; left:0; right:0;
-  background:#eee; padding:10px; border-bottom:1px solid #444;
-  text-align:center; z-index:1000;
-  display:flex; flex-direction:column; align-items:center; gap:6px;
-  max-width: 800px; margin: auto;
-}
+.surname, .member {  cursor:pointer; padding:5px; border:1px solid #444; border-radius:5px;  margin:3px; background:#f7f7f7; text-align:center;}
+.topbar {  position:fixed; top:0; left:0; right:0;  background:#eee; padding:10px; border-bottom:1px solid #444;  text-align:center; z-index:1000;  display:flex; flex-direction:column; align-items:center; gap:6px;  max-width: 800px; margin: auto;}
 .title { margin:0; font-weight:bold; color:#d00; }
 .buttons { display:flex; gap:8px; flex-wrap:wrap; }
 .buttons button { padding:6px 12px; }
 .content { margin: 122px auto 0 auto; max-width: 800px; }
 
 /* INTRO SCREEN */
-#screen0 {
-  max-width: 800px; margin: -28px auto 0 auto; padding: 20px; text-align: left;
-  font-size: 14px; line-height: 1.6;
-}
-#screen0 h1 {
-  text-align: center; color: #d00; font-size: 2.5em; margin-bottom: 30px;
-  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-}
-#screen0 ul {
-  list-style: none; padding-left: 0; margin-bottom: 30px;
-}
-#screen0 li {
-  margin-bottom: 12px; padding: 5px; background: #f8f9fa;
-  border-left: 4px solid #d00; padding-left: 5px;
-  border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+#screen0 {  max-width: 800px; margin: -28px auto 0 auto; padding: 20px; text-align: left;  font-size: 14px; line-height: 1.6;}
+#screen0 h1 {  text-align: center; color: #d00; font-size: 2.5em; margin-bottom: 30px;  text-shadow: 2px 2px 4px rgba(0,0,0,0.3);}
+#screen0 ul {  list-style: none; padding-left: 0; margin-bottom: 30px;}
+#screen0 li {  margin-bottom: 12px; padding: 5px; background: #f8f9fa;  border-left: 4px solid #d00; padding-left: 5px;  border-radius: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);}
 #screen0 b { color: #d00; }
-.continue-btn {
-  background: #d00 !important; width:150px; height:30px; color:white; margin: auto;
-  outline: none; display: flex; align-items: center; justify-content: center;
-  font-size: x-large; border-radius: 25px; padding: 10px; cursor: pointer;
-  transition: all 0.3s ease; border: none; font-weight: bold;
-}
-.continue-btn:hover {
-  transform: translateY(-2px); box-shadow: 0 4px 12px rgba(208,0,0,0.4);
-}
+.continue-btn {  background: #d00 !important; width:150px; height:30px; color:white; margin: auto;  outline: none; display: flex; align-items: center; justify-content: center;  font-size: x-large; border-radius: 25px; padding: 10px; cursor: pointer;  transition: all 0.3s ease; border: none; font-weight: bold;}
+.continue-btn:hover {  transform: translateY(-2px); box-shadow: 0 4px 12px rgba(208,0,0,0.4);}
 
 /* Generation badge */
-.gen-badge-circle {
-  position:absolute; top:5px; right:4px;
-  width:22px; height:22px; background:black; color:white;
-  border-radius:50%; display:flex; justify-content:center;
-  align-items:center; font-size:11px; font-weight:bold;
-}
+.gen-badge-circle {  position:absolute; top:5px; right:4px;  width:22px; height:22px; background:black; color:white;  border-radius:50%; display:flex; justify-content:center;  align-items:center; font-size:11px; font-weight:bold;}
 .idno { font-size:xx-small; color:red; display:none; }
 
 /* Search dropdown */
-#searchResults {
-  position: absolute;
-  top: 105px;
-  width: 90%; max-width: 720px;
-  background: white;
-  border: 1px solid #666;
-  border-radius: 5px;
-  max-height: 250px;
-  overflow-y: auto;
-  z-index: 2000;
-  display: none;
-  box-shadow: 0 2px 6px rgba(0,0,0,.3);
-}
-.search-item {
-  padding: 8px; border-bottom: 1px solid #ddd;
-  cursor: pointer; background: #fafafa;
-}
+#searchResults {  position: absolute;  top: 105px;  width: 90%; max-width: 720px;  background: white;  border: 1px solid #666;  border-radius: 5px;  max-height: 250px;  overflow-y: auto;  z-index: 2000;  display: none;  box-shadow: 0 2px 6px rgba(0,0,0,.3);}
+.search-item {  padding: 8px; border-bottom: 1px solid #ddd;  cursor: pointer; background: #fafafa;}
 .search-item:hover { background:#e0e0e0; }
 
 /* highlight found person */
-.search-highlight {
-  border: 3px solid orange !important;
-  box-shadow: 0 0 10px orange !important;
-}
+.search-highlight {  border: 3px solid orange !important;  box-shadow: 0 0 10px orange !important;}
 </style>
 </head>
 <body>
 
-<div id="langToggle">E</div>
+<div id="langToggle" style="background:#d00;">E</div>
 
 <!-- INTRO SCREEN -->
 <div id="screen0">
@@ -161,7 +80,7 @@ body {
   <div class="buttons">
     <button id="paternalBtn" disabled>Paternal</button>
     <button id="maternalBtn" disabled>Maternal</button>
-    <button id="expandAllToggle" disabled style="font-size:14px;">Expand All</button>
+    <button id="expandAllToggle" disabled style="font-size:14px;">Expand</button>
     <button id="homeBtn">Home</button>
   </div>
   <input id="searchBox" type="text" placeholder="Search name…" style="width:90%; padding:6px; font-size:16px; border:1px solid #444; border-radius:5px;">
@@ -206,7 +125,7 @@ async function getPhotoAvailability() {
   }
 }
 
-/* INITIALIZE DATA (LANGUAGE-AWARE) */
+/* INITIALIZE DATA (LANGUAGE-AWARE, UI-agnostic) */
 async function initializeData() {
   const photoSet = await getPhotoAvailability();
 
@@ -231,17 +150,6 @@ async function initializeData() {
 
   document.getElementById('arraycount').textContent = data.length;
   setTitle(`Family Tree (${photoSet.size} photos loaded)`);
-
-  // Rebuild surnames if on home screen
-  if (screen1.style.display !== "none") {
-    screen1.innerHTML = "";
-    initializeUI();
-  }
-
-  // Rebuild current tree if visible
-  if (treeDiv.style.display !== "none" && currentPersonId) {
-    showRootAncestor(currentPersonId, "father");
-  }
 }
 
 /* MULTIPLE SPOUSES */
@@ -360,7 +268,7 @@ function buildNode(person, level) {
       currentPersonId = targetId;
       selectedPersonId = targetId;
       showRootAncestor(targetId, "father");
-      expandBtn.textContent = "Expand All";
+      expandBtn.textContent = "Expand";
     };
   } else {
     photo.onclick = ev => {
@@ -388,7 +296,7 @@ function buildNode(person, level) {
             currentPersonId = targetId;
             selectedPersonId = targetId;
             showRootAncestor(targetId, "father");
-            expandBtn.textContent = "Expand All";
+            expandBtn.textContent = "Expand";
           };
         } else {
           photo.onclick = ev => {
@@ -410,7 +318,7 @@ function buildNode(person, level) {
     ev.stopPropagation();
     kids.classList.toggle("collapsed");
     kids.classList.toggle("expanded");
-    expandBtn.textContent = "Expand All";
+    expandBtn.textContent = "Expand";
   };
   persons[person.id].children.forEach(cid => {
     kids.appendChild(buildNode(persons[cid], level + 1));
@@ -422,15 +330,22 @@ function buildNode(person, level) {
 
 /* UI SCREENS */
 function initializeUI() {
-  [...new Set(data.map(p => p.name.split(" ")[0]))]
-    .sort()
-    .forEach(sn => {
-      const d = document.createElement("div");
-      d.className = "surname";
-      d.textContent = sn;
-      d.onclick = () => showMembers(sn);
-      screen1.appendChild(d);
-    });
+  screen1.innerHTML = "";
+
+  const surnames = new Set();
+  data.forEach(p => {
+    const parts = (p.name || "").trim().split(/\s+/);
+    if (parts[0]) surnames.add(parts[0]);
+  });
+
+  [...surnames].sort().forEach(sn => {
+    const d = document.createElement("div");
+    d.className = "surname";
+    d.textContent = sn;
+    d.onclick = () => showMembers(sn);
+    screen1.appendChild(d);
+  });
+
   window.scrollTo(0, 0);
 }
 
@@ -440,7 +355,7 @@ function showMembers(surname) {
   screen2.style.display = "block";
   screen2.innerHTML = "";
   data
-    .filter(p => p.name.startsWith(surname))
+    .filter(p => p.name && p.name.startsWith(surname))
     .sort((a,b) => a.name.localeCompare(b.name))
     .forEach(p => {
       const d = document.createElement("div");
@@ -483,6 +398,29 @@ function scrollToHighlightedPerson() {
   }, 300);
 }
 
+/* COMMON HELPERS */
+function setTitle(t){ document.getElementById("title").textContent = t; }
+function setButtonsEnabled(en){
+  paternalBtn.disabled = maternalBtn.disabled = expandBtn.disabled = !en;
+}
+
+function resetScreensOnLanguageChange() {
+  screen1.innerHTML = "";
+  screen2.innerHTML = "";
+
+  screen1.style.display = "grid";
+  screen2.style.display = "none";
+  treeDiv.style.display = "none";
+
+  setButtonsEnabled(false);
+  expandBtn.textContent = "Expand";
+  setTitle("Family Tree");
+
+  selectedPersonId = null;
+  currentPersonId  = null;
+  window.scrollTo(0, 0);
+}
+
 /* BUTTONS */
 document.getElementById("homeBtn").onclick = () => {
   setTitle("Family Tree");
@@ -490,30 +428,26 @@ document.getElementById("homeBtn").onclick = () => {
   screen2.style.display = "none";
   treeDiv.style.display = "none";
   setButtonsEnabled(false);
-  expandBtn.textContent = "Expand All";
+  expandBtn.textContent = "Expand";
+  initializeUI();  // rebuild surnames in current language
 };
 
 paternalBtn.onclick = () => {
   if (currentPersonId) showRootAncestor(currentPersonId, "father");
-  expandBtn.textContent = "Expand All";
+  expandBtn.textContent = "Expand";
 };
 maternalBtn.onclick = () => {
   if (currentPersonId) showRootAncestor(currentPersonId, "mother");
-  expandBtn.textContent = "Expand All";
+  expandBtn.textContent = "Expand";
 };
 
-function setTitle(t){ document.getElementById("title").textContent = t; }
-function setButtonsEnabled(en){
-  paternalBtn.disabled = maternalBtn.disabled = expandBtn.disabled = !en;
-}
-
 expandBtn.onclick = () => {
-  const expand = expandBtn.textContent === "Expand All";
+  const expand = expandBtn.textContent === "Expand";
   document.querySelectorAll(".children").forEach(c => {
     c.classList.remove("collapsed","expanded");
     c.classList.add(expand ? "expanded" : "collapsed");
   });
-  expandBtn.textContent = expand ? "Collapse All" : "Expand All";
+  expandBtn.textContent = expand ? "Collapse" : "Expand";
   if (expand) scrollToHighlightedPerson();
 };
 
@@ -526,7 +460,7 @@ searchBox.oninput = () => {
   const q = searchBox.value.trim().toLowerCase();
   searchResults.innerHTML = "";
   if (!q) { searchResults.style.display = "none"; return; }
-  let matches = data.filter(p => p.name.toLowerCase().includes(q));
+  let matches = data.filter(p => p.name && p.name.toLowerCase().includes(q));
   matches.sort((a,b) => a.name.localeCompare(b.name));
   matches.forEach(p => {
     const item = document.createElement("div");
@@ -539,7 +473,7 @@ searchBox.oninput = () => {
       selectedPersonId = p.id;
       currentPersonId = p.id;
       showRootAncestor(p.id, "father");
-      expandBtn.textContent = "Expand All";
+      expandBtn.textContent = "Expand";
     };
     searchResults.appendChild(item);
   });
@@ -555,7 +489,7 @@ document.getElementById('continueBtn').onclick = async function() {
   screen2.style.display = "none";
   treeDiv.style.display = "none";
   setButtonsEnabled(false);
-  expandBtn.textContent = "Expand All";
+  expandBtn.textContent = "Expand";
   await initializeData();
   initializeUI();
 };
@@ -571,7 +505,23 @@ langToggle.onclick = async function () {
     this.style.background = "#d00";
     this.textContent = "E";
   }
+
+  const introVisible = document.getElementById('screen0').style.display !== 'none';
+
+  if (introVisible) {
+    // Only update in-memory data; keep user on intro
+    await initializeData();
+    return;
+  }
+
   await initializeData();
+
+  if (treeDiv.style.display !== "none" && currentPersonId) {
+    showRootAncestor(currentPersonId, "father");
+  } else {
+    resetScreensOnLanguageChange();
+    initializeUI();
+  }
 };
 </script>
 </body>
