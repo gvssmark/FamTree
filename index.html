@@ -69,7 +69,7 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
     <li class="li-en" style="display:none;">For persons having <b>more than one spouse</b>, click on the <b>spouse name</b> will switch the tree.</li>
 
     <!-- Telugu intro lines -->
-    <li class="li-te">ఈ డేటాలో <b><span id="arraycount"></span></b> మంది ఉన్నారు. వారిలో మీరు ఒకరు కావచ్చు</li>
+    <li class="li-te">ఈ డేటాలో <b><span id="arraycount1"></span></b> మంది ఉన్నారు. వారిలో మీరు ఒకరు కావచ్చు</li>
     <li class="li-te"><b>ఇంటి పేరు</b> పై క్లిక్ చేస్తే ఆ ఇంటి పేరు ఉన్న వారందరూ కనిపిస్తారు. ఆ జాబితాలోని <b>పేరు</b> పై క్లిక్ చేస్తే వారి పితృ వంశ వృక్షం చూపబడుతుంది.</li>
     <li class="li-te"><b>మాతృ</b> బటన్ పై క్లిక్ చేస్తే వారి మాతృ వంశ వృక్షం చూపబడుతుంది.</li>
     <li class="li-te"><b>Expand All</b> బటన్ పై క్లిక్ చేస్తే మొత్తం కుటుంబ వృక్షం విస్తరించబడుతుంది.</li>
@@ -100,6 +100,8 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 <div id="tree" class="tree-container content" style="display: none;"></div>
 
 <script>
+  docuemnt.getElementById('arraycount').innerHTML=gvss.length-1
+  docuemnt.getElementById('arraycounttel').innerHTML=gvss.length-1
 let selectedLanguage = "te"; // default language
 
 const uiText = {
