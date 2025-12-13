@@ -38,9 +38,11 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(208,0,0,0.4);}
 /* Generation badge */
 .gen-badge-circle { position:absolute; top:5px; right:4px; width:22px; height:22px; background:black; color:white; border-radius:50%; display:flex; justify-content:center; align-items:center; font-size:11px; font-weight:bold;}
-/* Adopted parent tag - FIXED: Prevent click propagation */
-.adopted-tag {  position:absolute; top:5px; left:4px;   background:#ff6b6b; color:white;   padding:2px 6px; border-radius:15px;   font-size:10px; font-weight:bold;   cursor: pointer;  pointer-events: auto;}
+/* Parent tags */
+.adopted-tag {   position:absolute; bottom:5px; right:4px;   background:#ff6b6b; color:white;   padding:2px 6px; border-radius:15px;   font-size:10px; font-weight:bold;   cursor: pointer;  pointer-events: auto;}
 .adopted-tag:hover { background: #ff5252; transform: scale(1.05); }
+.bio-tag {   position:absolute; bottom:5px; right:4px;   background:#4caf50; color:white;   padding:2px 6px; border-radius:15px;   font-size:10px; font-weight:bold;   cursor: pointer;  pointer-events: auto;}
+.bio-tag:hover { background: #45a049; transform: scale(1.05); }
 .has-adopted-parents { border: 2px solid #ff6b6b !important; box-shadow: 0 0 8px rgba(255,107,107,0.5) !important; }
 .idno { font-size:xx-small; color:red; display:none; }
 /* Search dropdown */
@@ -69,7 +71,7 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 <li class="li-en" style="display:none;">Click on the <b>Photo</b> will switch to that person's spouse tree (if having spouse) / that person's tree</li>
 <li class="li-en" style="display:none;">Click on <b>Home</b> will take you to Surnames list.</li>
 <li class="li-en" style="display:none;">For persons having <b>more than one spouse</b>, click on the <b>spouse name</b> will switch the tree.</li>
-<li class="li-en" style="display:none;"><b>Red border + "Has Adopted Parents" tag</b> - Click tag to see Adopted Parents tree</li>
+<li class="li-en" style="display:none;"><b>Red tag "Has Adopted Parents"</b> → Click to see Adopted Parents tree | <b>Green tag "Has Biological Parents"</b> → Click to see Biological Parents tree</li>
 <!-- Telugu intro lines -->
 <li class="li-te">ఈ డేటాలో <b><span id="arraycountl"></span></b> మంది ఉన్నారు. వారిలో మీరు ఒకరు కావచ్చు</li>
 <li class="li-te"><b>ఇంటి పేరు</b> పై క్లిక్ చేస్తే ఆ ఇంటి పేరు ఉన్న వారందరూ కనిపిస్తారు. ఆ జాబితాలోని <b>పేరు</b> పై క్లిక్ చేస్తే వారి పితృ వంశ వృక్షం చూపబడుతుంది.</li>
@@ -80,7 +82,7 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 <li class="li-te"><b>ఫోటో</b> పై క్లిక్ చేస్తే ఆ వ్యక్తి / జీవిత భాగస్వామి వృక్షం మారుతుంది (ఉంటే).</li>
 <li class="li-te"><b>హోమ్</b> పై క్లిక్ చేస్తే మళ్లీ ఇంటి పేర్ల జాబితాకు వెళ్తారు.</li>
 <li class="li-te">ఒకరికంటే ఎక్కువ జీవిత భాగస్వాములు ఉన్నవారి కోసం, <b>spouse name</b> పై క్లిక్ చేస్తే వృక్షం మారుతుంది.</li>
-<li class="li-te"><b>ఎరుపు బార్డర్ + "దత్తత గొంతులు" ట్యాగ్</b> - ట్యాగ్ క్లిక్ చేస్తే దత్తత గొంతుల వృక్షం</li>
+<li class="li-te"><b>ఎరుపు ట్యాగ్ "దత్తత తల్లిదండ్రులు"</b> → దత్తత తల్లిదండ్రుల వృక్షం | <b>పచ్చ ట్యాగ్ "జన్మ తల్లిదండ్రులు"</b> → జన్మ తల్లిదండ్రుల వృక్షం</li>
 </ul>
 <div class="continue-btn" id="continueBtn">Continue</div>
 <br>
@@ -103,6 +105,7 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 document.getElementById("arraycountl").innerHTML=gvss.length-1
 document.getElementById("arraycount").innerHTML=gvss.length-1
 let selectedLanguage = "te"; // default language
+let currentTreeType = 'biological'; // Track current tree type: 'biological' or 'adopted'
 const uiText = {
 en: {
 paternal: "Paternal",
@@ -112,8 +115,9 @@ collapse: "Collapse",
 home: "Home",
 title: "Family Tree",
 adoptedParents: "Has Adopted Parents",
-bioParents: "Biological Parents",
-adoptedParentsTree: "Adopted Parents Tree"
+bioParents: "Has Biological Parents",
+adoptedParentsTree: "Adopted Parents Tree",
+bioParentsTree: "Biological Parents Tree"
 },
 te: {
 paternal: "పితృ వంశం",
@@ -123,8 +127,9 @@ collapse: "మూసివేయి",
 home: "హోమ్",
 title: "కుటుంబ వృక్షం",
 adoptedParents: "దత్తత తల్లిదండ్రులు",
-bioParents: "జీవశాస్త్రీయ గొతల్లిదండ్రులు",
-adoptedParentsTree: "దత్తత  వృక్షం"
+bioParents: "జన్మ తల్లిదండ్రులు ",
+adoptedParentsTree: "దత్తత తల్లిదండ్రుల వృక్షం",
+bioParentsTree: "జన్మ తల్లిదండ్రుల వృక్షం"
 }
 };
 document.getElementById('arraycount').textContent = gvss.length;
@@ -181,10 +186,26 @@ console.warn('Photo API failed, using no photos:', e);
 return new Set();
 }
 }
-/* NEW: Show Adopted Parents Tree */
+/* Show Biological Parents Tree */
+function showBiologicalParentsTree(id, side = 'father') {
+const person = persons[id];
+currentTreeType = 'biological';
+let root = person;
+while (root && root[side]) root = persons[root[side]];
+if (!root) root = person;
+setTitle((side === "father" ? "Paternal Tree of " : "Maternal Tree of ") + person.name);
+screen1.style.display = "none";
+screen2.style.display = "none";
+treeDiv.style.display = "block";
+treeDiv.innerHTML = "";
+treeDiv.appendChild(buildNode(root, 0));
+setButtonsEnabled(true);
+scrollToHighlightedPerson();
+}
+/* Show Adopted Parents Tree */
 function showAdoptedParentsTree(id) {
 const person = persons[id];
-if (!person.hasAdoptedParents) return;
+currentTreeType = 'adopted';
 let rootFather = person.adoptedFather ? persons[person.adoptedFather] : null;
 let rootMother = person.adoptedMother ? persons[person.adoptedMother] : null;
 let root = rootFather || rootMother || person;
@@ -197,7 +218,7 @@ treeDiv.appendChild(buildNode(root, 0));
 setButtonsEnabled(true);
 scrollToHighlightedPerson();
 }
-/* INITIALIZE DATA (LANGUAGE-AWARE, UI-agnostic) */
+/* INITIALIZE DATA */
 async function initializeData() {
 const photoSet = await getPhotoAvailability();
 data = gvss.slice(1).map(r => ({
@@ -206,13 +227,14 @@ name: selectedLanguage === "en" ? r[1] : r[9],
 gender: r[2],
 father: r[3] ? Number(r[3]) : null,
 mother: r[4] ? Number(r[4]) : null,
-adoptedFather: r[10] ? Number(r[10]) : null,  // NEW: Col10
-adoptedMother: r[11] ? Number(r[11]) : null,  // NEW: Col11
+adoptedFather: r[10] ? Number(r[10]) : null,
+adoptedMother: r[11] ? Number(r[11]) : null,
 spouse: r[5] ? Number(r[5]) : null,
 dob: r[6],
 telugu: r[9],
 photoAvailable: photoSet.has(Number(r[0])),
-hasAdoptedParents: (r[10] || r[11]) ? true : false  // NEW: Flag for adopted parents
+hasAdoptedParents: (r[10] || r[11]) ? true : false,
+hasBiologicalParents: (r[3] || r[4]) ? true : false
 }));
 persons = {};
 data.forEach(p => persons[p.id] = { ...p, children: [] });
@@ -223,7 +245,7 @@ if (p.father && persons[p.father]) persons[p.father].children.push(p.id);
 if (p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
 });
 
-// Build adopted children links (both parents get adopted children)
+// Build adopted children links
 data.forEach(p => {
 if (p.adoptedFather && persons[p.adoptedFather]) {
 if (!persons[p.adoptedFather].children) persons[p.adoptedFather].children = [];
@@ -274,7 +296,7 @@ imgCache[key] = { status:'loading', img:null, promise:p };
 img.src = `https://gvssmark.github.io/FamTree/photos/${id}.JPG`;
 return p;
 }
-/* TREE NODE BUILDER - FIXED Adopted Tag Click */
+/* TREE NODE BUILDER */
 const genBadgeColors = ["#000","#1a73e8","#0f9d58","#f4b400","#db4437","#673ab7","#0097a7","#5c6bc0","#795548"];
 const genNodeColors = ["#f0f0f0","#e0f2ff","#e0ffe0","#fff8e0","#ffe0e0","#f3e0ff","#e0ffff","#e8eaf6","#f5f5dc"];
 function formatDOB(dob) {
@@ -295,18 +317,31 @@ badge.textContent = "G" + level;
 badge.style.background = genBadgeColors[level] || "#000";
 node.appendChild(badge);
 
-// FIXED: Adopted Parents Tag with proper click handler
-if (person.hasAdoptedParents) {
-const adoptedTag = document.createElement("div");
-adoptedTag.className = "adopted-tag";
-adoptedTag.textContent = uiText[selectedLanguage].adoptedParents;
-adoptedTag.onclick = (ev) => {
-ev.stopPropagation();  // FIXED: Prevent node click
-currentPersonId = person.id;
-selectedPersonId = person.id;
-showAdoptedParentsTree(person.id);  // NEW: Show adopted parents tree
-};
-node.appendChild(adoptedTag);
+// DYNAMIC TAGS BASED ON TREE TYPE
+if (currentTreeType === 'biological' && person.hasAdoptedParents) {
+  // In biological tree: Show "Has Adopted Parents" (RED)
+  const adoptedTag = document.createElement("div");
+  adoptedTag.className = "adopted-tag";
+  adoptedTag.textContent = uiText[selectedLanguage].adoptedParents;
+  adoptedTag.onclick = (ev) => {
+    ev.stopPropagation();
+    currentPersonId = person.id;
+    selectedPersonId = person.id;
+    showAdoptedParentsTree(person.id);
+  };
+  node.appendChild(adoptedTag);
+} else if (currentTreeType === 'adopted' && person.hasBiologicalParents) {
+  // In adopted tree: Show "Has Biological Parents" (GREEN)
+  const bioTag = document.createElement("div");
+  bioTag.className = "bio-tag";
+  bioTag.textContent = uiText[selectedLanguage].bioParents;
+  bioTag.onclick = (ev) => {
+    ev.stopPropagation();
+    currentPersonId = person.id;
+    selectedPersonId = person.id;
+    showBiologicalParentsTree(person.id);
+  };
+  node.appendChild(bioTag);
 }
 
 const photo = document.createElement("img");
@@ -343,7 +378,7 @@ spLine.onclick = ev => {
 ev.stopPropagation();
 currentPersonId = sp.id;
 selectedPersonId = sp.id;
-showRootAncestor(sp.id, "father");
+showBiologicalParentsTree(sp.id, "father"); // Always biological for spouses
 };
 } else {
 spLine.style.cursor = "default";
@@ -358,7 +393,7 @@ photo.onclick = ev => {
 ev.stopPropagation();
 currentPersonId = targetId;
 selectedPersonId = targetId;
-showRootAncestor(targetId, "father");
+showBiologicalParentsTree(targetId, "father"); // Always biological for photos
 expandBtn.textContent = uiText[selectedLanguage].expand;
 };
 } else {
@@ -366,10 +401,10 @@ photo.onclick = ev => {
 ev.stopPropagation();
 currentPersonId = person.id;
 selectedPersonId = person.id;
-showRootAncestor(person.id, "father");
+showBiologicalParentsTree(person.id, "father"); // Always biological for photos
 };
 }
-// SLIDESHOW only for people with photos
+// SLIDESHOW
 let slideshowIds = [person.id, ...spouseList.map(s => s.id)].filter(id => {
 const personData = persons[id];
 return personData && personData.photoAvailable === true;
@@ -379,30 +414,13 @@ let slideIndex = 0;
 setInterval(() => {
 loadImageById(slideshowIds[slideIndex]).then(img => {
 photo.src = img.src;
-if (!hasMultipleSpouses) {
-const targetId = hasSingleSpouse ? spouseList[0].id : person.id;
-photo.onclick = ev => {
-ev.stopPropagation();
-currentPersonId = targetId;
-selectedPersonId = targetId;
-showRootAncestor(targetId, "father");
-expandBtn.textContent = uiText[selectedLanguage].expand;
-};
-} else {
-photo.onclick = ev => {
-ev.stopPropagation();
-currentPersonId = person.id;
-selectedPersonId = person.id;
-showRootAncestor(person.id, "father");
-};
-}
 });
 slideIndex = (slideIndex + 1) % slideshowIds.length;
 }, 3000);
 }
-// CHILDREN - Node click (excluding adopted tag area)
+// NODE CLICK (expand/collapse)
 node.onclick = ev => {
-if (ev.target.classList.contains('adopted-tag')) return;  // FIXED: Don't expand on tag click
+if (ev.target.classList.contains('adopted-tag') || ev.target.classList.contains('bio-tag')) return;
 ev.stopPropagation();
 const kids = node.parentNode.querySelector('.children');
 if (kids) {
@@ -464,10 +482,11 @@ function showMemberOptions(id) {
 currentPersonId = id;
 selectedPersonId = id;
 setButtonsEnabled(true);
-showRootAncestor(id, "father");
+showBiologicalParentsTree(id, "father");
 }
 function showRootAncestor(id, side) {
 selectedPersonId = id;
+currentTreeType = 'biological';
 let root = persons[id];
 while (root && root[side]) root = persons[root[side]];
 if (!root) root = persons[id];
@@ -503,6 +522,7 @@ expandBtn.textContent = uiText[selectedLanguage].expand;
 setTitle(uiText[selectedLanguage].title);
 selectedPersonId = null;
 currentPersonId = null;
+currentTreeType = 'biological';
 window.scrollTo(0, 0);
 }
 /* BUTTONS */
@@ -513,14 +533,15 @@ screen2.style.display = "none";
 treeDiv.style.display = "none";
 setButtonsEnabled(false);
 expandBtn.textContent = uiText[selectedLanguage].expand;
-initializeUI(); // rebuild surnames in current language
+currentTreeType = 'biological';
+initializeUI();
 };
 paternalBtn.onclick = () => {
-if (currentPersonId) showRootAncestor(currentPersonId, "father");
+if (currentPersonId) showBiologicalParentsTree(currentPersonId, "father");
 expandBtn.textContent = uiText[selectedLanguage].expand;
 };
 maternalBtn.onclick = () => {
-if (currentPersonId) showRootAncestor(currentPersonId, "mother");
+if (currentPersonId) showBiologicalParentsTree(currentPersonId, "mother");
 expandBtn.textContent = uiText[selectedLanguage].expand;
 };
 expandBtn.onclick = () => {
@@ -556,7 +577,7 @@ searchResults.style.display = "none";
 searchBox.value = "";
 selectedPersonId = p.id;
 currentPersonId = p.id;
-showRootAncestor(p.id, "father");
+showBiologicalParentsTree(p.id, "father");
 expandBtn.textContent = uiText[selectedLanguage].expand;
 };
 searchResults.appendChild(item);
@@ -597,7 +618,11 @@ return;
 }
 await initializeData();
 if (treeDiv.style.display !== "none" && currentPersonId) {
-showRootAncestor(currentPersonId, "father");
+if (currentTreeType === 'biological') {
+showBiologicalParentsTree(currentPersonId, "father");
+} else {
+showAdoptedParentsTree(currentPersonId);
+}
 } else {
 resetScreensOnLanguageChange();
 initializeUI();
