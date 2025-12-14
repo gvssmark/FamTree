@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -160,82 +161,55 @@ async function getPhotoAvailability() {
   }
 }
 
-// **KEY CHANGES: Proper tree root selection for adopted children**
-// **PERFECT TREE ROOT LOGIC: Handles adopted child + ALL descendants**
+// **PERFECT getTreeRoot - Fixed biological lineage**
 function getTreeRoot(personId, side, treeType) {
   const person = persons[personId];
   
   if (treeType === 'adopted') {
-    // Adopted tree: Always start from adopted parents
-    if (side === 'father' && person.adoptedFather) return persons[person.adoptedFather];
-    if (side === 'mother' && person.adoptedMother) return persons[person.adoptedMother];
-    return person;
+    // Adopted tree: Trace through adopted parents
+    let root = person;
+    while (root) {
+      if (side === 'father' && root.adoptedFather) {
+        root = persons[root.adoptedFather];
+      } else if (side === 'mother' && root.adoptedMother) {
+        root = persons[root.adoptedMother];
+      } else {
+        break;
+      }
+    }
+    return root;
   } else {
-    // Biological tree: Check if person OR any ancestor has adopted parents
-    function hasAdoptedAncestry(pid) {
-      let current = persons[pid];
-      while (current) {
-        if (current.adoptedFather || current.adoptedMother) return true;
-        if (side === 'father' && current.father) current = persons[current.father];
-        else if (side === 'mother' && current.mother) current = persons[current.mother];
-        else break;
-      }
-      return false;
+    // Biological tree: Pure biological lineage ONLY
+    let root = person;
+    while (root && root[side]) {
+      root = persons[root[side]];  // ONLY biological father/mother
     }
-    
-    if (hasAdoptedAncestry(personId)) {
-      // **KEY: Adopted ancestry exists - trace through adopted lineage**
-      let current = person;
-      while (current) {
-        if (side === 'father' && current.adoptedFather) {
-          current = persons[current.adoptedFather];
-        } else if (side === 'mother' && current.adoptedMother) {
-          current = persons[current.adoptedMother];
-        } else if (side === 'father' && current.father) {
-          current = persons[current.father];
-        } else if (side === 'mother' && current.mother) {
-          current = persons[current.mother];
-        } else {
-          break;
-        }
-      }
-      return current || person;
-    } else {
-      // Normal biological lineage
-      let root = person;
-      while (root && root[side]) root = persons[root[side]];
-      return root || person;
-    }
+    return root || person;
   }
 }
-
 
 function showBiologicalParentsTree(id, side = 'father') {
   currentTreeType = 'biological';
   currentSide = side;
   const root = getTreeRoot(id, side, currentTreeType);
   setTitle((side === "father" ? "Paternal Tree of " : "Maternal Tree of ") + persons[id].name);
-  screen1.style.display = "none"; 
-  screen2.style.display = "none"; 
-  treeDiv.style.display = "block";
-  treeDiv.innerHTML = ""; 
-  treeDiv.appendChild(buildNode(root, 0));
-  setButtonsEnabled(true); 
-  scrollToHighlightedPerson();
+  screen1.style.display = "none"; screen2.style.display = "none"; treeDiv.style.display = "block";
+  treeDiv.innerHTML = ""; treeDiv.appendChild(buildNode(root, 0));
+  setButtonsEnabled(true); scrollToHighlightedPerson();
 }
 
-
-function showAdoptedParentsTree(id) {
+function showAdoptedParentsTree(id, side = 'father') {
   currentTreeType = 'adopted';
+  currentSide = side;
+  // **FIXED: Use getTreeRoot for proper adopted lineage tracing**
+  const root = getTreeRoot(id, side, 'adopted');
   const person = persons[id];
-  let rootFather = person.adoptedFather ? persons[person.adoptedFather] : null;
-  let rootMother = person.adoptedMother ? persons[person.adoptedMother] : null;
-  const root = rootFather || rootMother || person;
   setTitle(uiText[selectedLanguage].adoptedParentsTree + " - " + person.name);
   screen1.style.display = "none"; screen2.style.display = "none"; treeDiv.style.display = "block";
   treeDiv.innerHTML = ""; treeDiv.appendChild(buildNode(root, 0));
   setButtonsEnabled(true); scrollToHighlightedPerson();
 }
+
 
 async function initializeData() {
   const photoSet = await getPhotoAvailability();
@@ -249,13 +223,11 @@ async function initializeData() {
   }));
   persons = {}; data.forEach(p => persons[p.id] = { ...p, children: [] });
   
-  // Build biological children links
   data.forEach(p => {
     if (p.father && persons[p.father]) persons[p.father].children.push(p.id);
     if (p.mother && persons[p.mother]) persons[p.mother].children.push(p.id);
   });
   
-  // Build adopted children links (for display in adopted trees)
   data.forEach(p => {
     if (p.adoptedFather && persons[p.adoptedFather]) {
       if (!persons[p.adoptedFather].children) persons[p.adoptedFather].children = [];
@@ -296,91 +268,67 @@ function loadImageById(id) {
 const genBadgeColors = ["#000","#1a73e8","#0f9d58","#f4b400","#db4437","#673ab7","#0097a7","#5c6bc0","#795548"];
 const genNodeColors = ["#f0f0f0","#e0f2ff","#e0ffe0","#fff8e0","#ffe0e0","#f3e0ff","#e0ffff","#e8eaf6","#f5f5dc"];
 
-function formatDOB(dob) { 
-  return dob ? new Date(dob).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""; 
-}
+function formatDOB(dob) { return dob ? new Date(dob).toLocaleDateString("en-US",{month:"short",day:"numeric"}) : ""; }
 
 function buildNode(person, level) {
   const wrap = document.createElement("div");
-  const node = document.createElement("div"); 
-  node.className = "node";
+  const node = document.createElement("div"); node.className = "node";
   if (person.hasAdoptedParents) node.classList.add("has-adopted-parents");
   node.style.background = genNodeColors[level] || "#f0f0f0";
   
-  // **PERFECT TAG LOGIC: Only adopted children get tags (NOT descendants)**
+  // **PERFECT TAG LOGIC - Fixed for adopted son**
   const isAdoptedChild = (person.adoptedFather || person.adoptedMother);
   
-  if (currentTreeType === 'biological' && isAdoptedChild && person.hasBiologicalParents) {
-    // Biological tree: Adopted child → RED "Has Adopted Parents" tag
-    const adoptedTag = document.createElement("div"); 
-    adoptedTag.className = "adopted-tag";
+  if (currentTreeType === 'biological' && isAdoptedChild) {
+    const adoptedTag = document.createElement("div"); adoptedTag.className = "adopted-tag";
     adoptedTag.textContent = uiText[selectedLanguage].adoptedParents;
     adoptedTag.onclick = (ev) => { 
-      ev.stopPropagation(); 
-      currentPersonId = person.id;
-      selectedPersonId = person.id;
-      showAdoptedParentsTree(person.id); 
-    };
+  ev.stopPropagation(); 
+  currentPersonId = person.id;
+  selectedPersonId = person.id;
+  showAdoptedParentsTree(person.id, 'father');  // Pass side parameter
+};
+
     node.appendChild(adoptedTag);
-  } else if (currentTreeType === 'adopted' && isAdoptedChild && person.hasBiologicalParents) {
-    // Adopted tree: Adopted child → GREEN "Has Biological Parents" tag
-    const bioTag = document.createElement("div"); 
-    bioTag.className = "bio-tag";
+  } else if (currentTreeType === 'adopted' && isAdoptedChild) {
+    const bioTag = document.createElement("div"); bioTag.className = "bio-tag";
     bioTag.textContent = uiText[selectedLanguage].bioParents;
     bioTag.onclick = (ev) => { 
       ev.stopPropagation(); 
       currentPersonId = person.id;
       selectedPersonId = person.id;
-      showBiologicalParentsTree(person.id, currentSide); 
+      showBiologicalParentsTree(person.id, 'father');  // Always biological father's tree
     };
     node.appendChild(bioTag);
   }
   
-  const badge = document.createElement("div"); 
-  badge.className = "gen-badge-circle";
-  badge.textContent = "G" + level; 
-  badge.style.background = genBadgeColors[level] || "#000";
+  const badge = document.createElement("div"); badge.className = "gen-badge-circle";
+  badge.textContent = "G" + level; badge.style.background = genBadgeColors[level] || "#000";
   node.appendChild(badge);
   
-  const photo = document.createElement("img"); 
-  photo.className = "photo"; 
-  photo.src = imgCache['noimage'].img.src;
+  const photo = document.createElement("img"); photo.className = "photo"; photo.src = imgCache['noimage'].img.src;
   if (person.photoAvailable) loadImageById(person.id).then(img => photo.src = img.src);
   
-  const textDiv = document.createElement("div"); 
-  textDiv.className = "text";
+  const textDiv = document.createElement("div"); textDiv.className = "text";
   let nameLine = `<b>${person.name} <span class='idno'>(${person.id})</span></b>`;
-  textDiv.innerHTML = nameLine; 
-  node.appendChild(photo); 
-  node.appendChild(textDiv);
+  textDiv.innerHTML = nameLine; node.appendChild(photo); node.appendChild(textDiv);
   
   if (person.id === selectedPersonId) node.classList.add("search-highlight");
   
-  // Spouses (unchanged)
-  let spouseSet = new Map(); 
-  getSpouses(person.id).forEach(s => spouseSet.set(s.id, s));
+  let spouseSet = new Map(); getSpouses(person.id).forEach(s => spouseSet.set(s.id, s));
   if (person.spouse && persons[person.spouse]) spouseSet.set(person.spouse, persons[person.spouse]);
   let spouseList = Array.from(spouseSet.values());
-  const hasSingleSpouse = spouseList.length === 1; 
-  const hasMultipleSpouses = spouseList.length > 1;
+  const hasSingleSpouse = spouseList.length === 1; const hasMultipleSpouses = spouseList.length > 1;
   
   spouseList.forEach(sp => {
-    const spLine = document.createElement("div"); 
-    spLine.style.color = "blue"; 
-    spLine.textContent = sp.name;
+    const spLine = document.createElement("div"); spLine.style.color = "blue"; spLine.textContent = sp.name;
     if (hasMultipleSpouses) {
       spLine.style.cursor = "pointer";
-      spLine.onclick = ev => { 
-        ev.stopPropagation(); 
-        currentPersonId = sp.id;
-        selectedPersonId = sp.id;
-        showBiologicalParentsTree(sp.id, "father"); 
-      };
+      spLine.onclick = ev => { ev.stopPropagation(); showBiologicalParentsTree(sp.id, "father"); };
     } else spLine.style.cursor = "default";
     textDiv.appendChild(spLine);
   });
   
-  // Photo click (unchanged)
   photo.classList.add("clickable");
   const targetId = hasSingleSpouse ? spouseList[0]?.id : person.id;
   photo.onclick = ev => {
@@ -391,7 +339,6 @@ function buildNode(person, level) {
     expandBtn.textContent = uiText[selectedLanguage].expand;
   };
   
-  // Slideshow (unchanged)
   let slideshowIds = [person.id, ...spouseList.map(s => s.id)].filter(id => persons[id]?.photoAvailable);
   if (slideshowIds.length > 1) {
     let slideIndex = 0;
@@ -401,26 +348,22 @@ function buildNode(person, level) {
     }, 3000);
   }
   
-  // Node click (unchanged)
   node.onclick = ev => {
     if (ev.target.classList.contains('adopted-tag') || ev.target.classList.contains('bio-tag')) return;
     ev.stopPropagation();
     const kids = node.parentNode.querySelector('.children');
     if (kids) {
-      kids.classList.toggle("collapsed"); 
-      kids.classList.toggle("expanded");
+      kids.classList.toggle("collapsed"); kids.classList.toggle("expanded");
       expandBtn.textContent = uiText[selectedLanguage].expand;
     }
   };
   
-  const kids = document.createElement("div"); 
-  kids.className = "children collapsed";
+  const kids = document.createElement("div"); kids.className = "children collapsed";
   persons[person.id].children.forEach(cid => kids.appendChild(buildNode(persons[cid], level + 1)));
   wrap.appendChild(node);
   if (persons[person.id].children?.length > 0) wrap.appendChild(kids);
   return wrap;
 }
-
 
 function initializeUI() {
   screen1.innerHTML = "";
@@ -459,7 +402,6 @@ function resetScreensOnLanguageChange() {
   selectedPersonId = null; currentPersonId = null; currentTreeType = 'biological'; window.scrollTo(0, 0);
 }
 
-// Event Handlers
 document.getElementById("homeBtn").onclick = () => {
   setTitle(uiText[selectedLanguage].title); screen1.style.display = "grid"; screen2.style.display = "none"; treeDiv.style.display = "none";
   setButtonsEnabled(false); expandBtn.textContent = uiText[selectedLanguage].expand; currentTreeType = 'biological'; initializeUI();
@@ -477,7 +419,6 @@ expandBtn.onclick = () => {
   if (expand) scrollToHighlightedPerson();
 };
 
-// Search
 document.addEventListener("click", () => searchResults.style.display = "none");
 searchBox.oninput = () => {
   const q = searchBox.value.trim().toLowerCase(); searchResults.innerHTML = "";
@@ -522,6 +463,7 @@ langToggle.onclick = async function () {
 };
 
 updateIntroLanguage();
+
 
 </script>
 </body>
