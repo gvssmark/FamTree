@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -54,7 +52,7 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 .search-highlight { border: 3px solid orange !important; box-shadow: 0 0 10px orange !important;}
 .buttons { display:flex; gap:4px; flex-wrap:wrap; font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;}
 .buttons button { padding:6px 6px; font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;}
-
+.updatedon {font-size:xx-small; color:blue}
 </style>
 </head>
 <body>
@@ -65,7 +63,7 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 <h1>Family Tree</h1>
 <ul>
 <!-- English intro lines -->
-<li class="li-en" style="display:none;">This data is having <b><span id="arraycount"></span></b> persons. You may be one among them</li>
+<li class="li-en" style="display:none;">This data is having <b><span id="arraycount"></span></b> persons. <span  class='updatedon' id='dttime0'></span>You may be one among them</li>
 <li class="li-en" style="display:none;">Click on a <b>Surname</b> will list all persons with that surname. Click on a <b>NAME</b> from the list will show the available Paternal root of that person.</li>
 <li class="li-en" style="display:none;">Click on <b>Maternal button</b> will show the available Maternal root of that person.</li>
 <li class="li-en" style="display:none;">Click on <b>Expand All button</b> will expand the full family tree and will scroll to that person.</li>
@@ -76,7 +74,7 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 <li class="li-en" style="display:none;">For persons having <b>more than one spouse</b>, click on the <b>spouse name</b> will switch the tree.</li>
 <li class="li-en" style="display:none;"><b>Red tag "Has Adopted Parents"</b> → Click to see Adopted Parents tree | <b>Green tag "Has Biological Parents"</b> → Click to see Biological Parents tree</li>
 <!-- Telugu intro lines -->
-<li class="li-te">ఈ డేటాలో <b><span id="arraycountl"></span></b> మంది ఉన్నారు. వారిలో మీరు ఒకరు కావచ్చు</li>
+<li class="li-te">ఈ డేటాలో <b><span id="arraycountl"></span></b> మంది ఉన్నారు. <span class='updatedon' id='dttime1'></span> వారిలో మీరు ఒకరు కావచ్చు</li>
 <li class="li-te"><b>ఇంటి పేరు</b> పై క్లిక్ చేస్తే ఆ ఇంటి పేరు ఉన్న వారందరూ కనిపిస్తారు. ఆ జాబితాలోని <b>పేరు</b> పై క్లిక్ చేస్తే వారి పితృ వంశ వృక్షం చూపబడుతుంది.</li>
 <li class="li-te"><b>మాతృ</b> బటన్ పై క్లిక్ చేస్తే వారి మాతృ వంశ వృక్షం చూపబడుతుంది.</li>
 <li class="li-te"><b>Expand All</b> బటన్ పై క్లిక్ చేస్తే మొత్తం కుటుంబ వృక్షం విస్తరించబడుతుంది.</li>
@@ -108,6 +106,10 @@ body { font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins; text-sha
 <div id="tree" class="tree-container content" style="display: none;"></div>
 
 <script>
+dttime1
+
+document.getElementById("dttime0").innerHTML = "(Updated on : " + gvss[0][12] +" )";
+document.getElementById("dttime1").innerHTML = "(నవీకరణ: " + gvss[0][12]+" )";
 
 document.getElementById("arraycountl").innerHTML = gvss.length-1;
 document.getElementById("arraycount").innerHTML = gvss.length-1;
