@@ -4,12 +4,12 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Family Tree</title>
-<script src="https://gvssmark.github.io/FamTree/index.js" defer></script>
+<script src="index.js" defer></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anek+Telugu:wght@400;500;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins&effect=neon|outline|emboss|shadow-multiple">
-<link rel="manifest" href="https://gvssmark.github.io/FamTree/manifest.json">
+<link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#317EFB"/>
-<script src="https://gvssmark.github.io/FamTree/gvss.json"></script>
+<script src="gvss.json"></script>
 <style>
 #langToggle {position: fixed;top: 5px;right: 3px;width: 34px;height: 34px;border-radius: 50%;color: white;font-weight: bold;display: flex;font-size: large;align-items: center;justify-content: center;cursor: pointer;z-index: 3000;box-shadow: 0 0 6px rgba(0,0,0,.4);}
 body {font-family:Poppins,sans-serif,'Anek Telugu',sans-serif,Poppins;text-shadow:3px 3px 3px #ababab;font-size:13px;margin:0;background: beige;}
@@ -337,7 +337,7 @@ function getSpouses(id) {
   return data.filter(p => p.spouse === id);
 }
 
-const noImageUrl = 'https://github.com/gvssmark/FamTree/blob/main/photos/noimage.PNG?raw=true';
+const noImageUrl = 'photos/noimage.PNG?raw=true';
 const imgCache = {};
 (function () {
   const img = new Image();
@@ -371,7 +371,7 @@ function loadImageById(id) {
   });
 
   imgCache[key] = { status: 'loading', img: null, promise: p };
-  img.src = `https://gvssmark.github.io/FamTree/photos/${id}.JPG`;
+  img.src = `photos/${id}.JPG`;
   return p;
 }
 
